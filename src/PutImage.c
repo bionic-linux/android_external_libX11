@@ -760,26 +760,33 @@ SendZImage(
     long bytes_per_src, bytes_per_dest, length;
     unsigned char *src, *dest;
     unsigned char *shifted_src = NULL;
+    CARD16 height;
 
     req->leftPad = 0;
     bytes_per_src = ROUNDUP((long)req->width * image->bits_per_pixel, 8) >> 3;
     bytes_per_dest = ROUNDUP((long)req->width * dest_bits_per_pixel,
 			     dest_scanline_pad) >> 3;
     length = bytes_per_dest * req->height;
-    req->length += (length + 3) >> 2;
+    height = req->height;
+
+    length += 3;
+    length >>= 2;
+    SetReqLen(req, length, length);
+    /* note: can't do req->foo past here, since we could be a bigreq now */
+    length = bytes_per_dest * height;
 
     src = (unsigned char *)image->data +
 	  (req_yoffset * image->bytes_per_line) +
 	  ((req_xoffset * image->bits_per_pixel) >> 3);
     if ((image->bits_per_pixel == 4) && ((unsigned int) req_xoffset & 0x01)) {
-	if (! (shifted_src = Xmallocarray(req->height, image->bytes_per_line))) {
+	if (! (shifted_src = Xmallocarray(height, image->bytes_per_line))) {
 	    UnGetReq(PutImage);
 	    return;
 	}
 
 	ShiftNibblesLeft(src, shifted_src, bytes_per_src,
 			 (long) image->bytes_per_line,
-			 (long) image->bytes_per_line, req->height,
+			 (long) image->bytes_per_line, height,
 			 image->byte_order);
 	src = shifted_src;
     }
@@ -791,7 +798,7 @@ SendZImage(
 	 (image->bits_per_pixel == 8)) &&
 	((long)image->bytes_per_line == bytes_per_dest) &&
 	((req_xoffset == 0) ||
-	 ((req_yoffset + req->height) < (unsigned)image->height))) {
+	 ((req_yoffset + height) < (unsigned)image->height))) {
 	Data(dpy, (char *)src, length);
 	Xfree(shifted_src);
 	return;
@@ -811,19 +818,19 @@ SendZImage(
     if ((image->byte_order == dpy->byte_order) ||
 	(image->bits_per_pixel == 8))
 	NoSwap(src, dest, bytes_per_src, (long)image->bytes_per_line,
-	       bytes_per_dest, req->height, image->byte_order);
+	       bytes_per_dest, height, image->byte_order);
     else if (image->bits_per_pixel == 32)
 	SwapFourBytes(src, dest, bytes_per_src, (long)image->bytes_per_line,
-		      bytes_per_dest, req->height, image->byte_order);
+		      bytes_per_dest, height, image->byte_order);
     else if (image->bits_per_pixel == 24)
 	SwapThreeBytes(src, dest, bytes_per_src, (long)image->bytes_per_line,
-		       bytes_per_dest, req->height, image->byte_order);
+		       bytes_per_dest, height, image->byte_order);
     else if (image->bits_per_pixel == 16)
 	SwapTwoBytes(src, dest, bytes_per_src, (long)image->bytes_per_line,
-		     bytes_per_dest, req->height, image->byte_order);
+		     bytes_per_dest, height, image->byte_order);
     else
 	SwapNibbles(src, dest, bytes_per_src, (long)image->bytes_per_line,
-		    bytes_per_dest, req->height);
+		    bytes_per_dest, height);
 
     if (dest == (unsigned char *)dpy->bufptr)
 	dpy->bufptr += length;
@@ -881,9 +888,13 @@ PutSubImage (
     if ((req_width == 0) || (req_height == 0))
 	return;
 
-    Available = ((65536 < dpy->max_request_size) ? (65536 << 2)
-						 : (dpy->max_request_size << 2))
-		- SIZEOF(xPutImageReq);
+    if (dpy->bigreq_size)
+	Available = (dpy->bigreq_size << 2);
+    else
+	Available = ((65536 < dpy->max_request_size) ?
+		     (65536 << 2) : (dpy->max_request_size << 2));
+
+    Available -= SIZEOF(xPutImageReq);
 
     if ((image->bits_per_pixel == 1) || (image->format != ZPixmap)) {
 	left_pad = (image->xoffset + req_xoffset) & (dpy->bitmap_unit - 1);
