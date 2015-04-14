@@ -33,6 +33,8 @@ in this Software without prior written authorization from The Open Group.
 #include "Cr.h"
 #include "ImUtil.h"
 #include "reallocarray.h"
+#include "Xxcbint.h"
+#include <xcb/xcbext.h>
 
 #if defined(__STDC__) && ((defined(sun) && defined(SVR4)) || defined(WIN32))
 #define RConst /**/
@@ -761,6 +763,7 @@ SendZImage(
     unsigned char *src, *dest;
     unsigned char *shifted_src = NULL;
     CARD16 height;
+    Bool want_writev;
 
     req->leftPad = 0;
     bytes_per_src = ROUNDUP((long)req->width * image->bits_per_pixel, 8) >> 3;
@@ -805,6 +808,42 @@ SendZImage(
     }
 
     length = ROUNDUP(length, 4);
+
+    /* we can writev if we don't need to swap */
+    want_writev = (image->byte_order == dpy->byte_order) ||
+		  (image->bits_per_pixel == 8);
+
+    /* but we'd rather pipeline if we can, including starting a new batch */
+    /* to make this not include new batch, ->bufptr not ->buffer */
+    if ((dpy->buffer + length) <= dpy->bufmax)
+	want_writev = False;
+
+    if (want_writev) {
+	int i, count = 0;
+	struct iovec vec[height + 1];
+
+	if (image->bytes_per_line == bytes_per_dest) {
+	    count = 1;
+	    vec[0].iov_base = src;
+	    vec[0].iov_len = (image->bytes_per_line * (height - 1)
+			      + bytes_per_src);
+	}
+	else {
+	    unsigned char *base = src;
+	    count = height;
+	    for (i = 0; i < height; i++) {
+		vec[i].iov_base = (unsigned char *)base;
+		vec[i].iov_len = bytes_per_src;
+		base += image->bytes_per_line;
+	    }
+	}
+
+	_XSend(dpy, NULL, 0); /* flush the request header */
+	if(xcb_writev(dpy->xcb->connection, vec, count, 0) < 0)
+		_XIOError(dpy);
+	return;
+    }
+
     if ((dpy->bufptr + length) <= dpy->bufmax)
 	dest = (unsigned char *)dpy->bufptr;
     else
