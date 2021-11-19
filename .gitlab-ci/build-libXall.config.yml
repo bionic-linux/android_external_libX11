@@ -1,0 +1,136 @@
+# The list of all libraries we want to build
+# The order matters, any dependencies must come before the library that
+# depends on it
+libraries:
+  - name: libXau
+  - name: libXdmcp
+    dependencies:
+      - xmlto
+  - name: libX11
+    requires:
+      - libXau
+      - libXdmcp
+  - name: libXext
+    requires:
+      - libX11
+    dependencies:
+      - xmlto
+  - name: libdmx
+    requires:
+      - libX11
+  - name: libfontenc
+    requires:
+      - libX11
+  - name: libFS
+    requires:
+      - libX11
+  - name: libICE
+    requires:
+      - libX11
+  - name: libSM
+    requires:
+      - libX11
+      - libICE
+  - name: libXt
+    requires:
+      - libX11
+      - libSM
+      - libICE
+  - name: libXmu
+    requires:
+      - libXext
+      - libXt
+    dependencies:
+      - xmlto
+  - name: libXpm
+    requires:
+      - libXext
+    dependencies:
+      - gettext
+  - name: libXaw
+    requires:
+      - libXext
+      - libXt
+      - libXmu
+      - libXpm
+  - name: libXaw3d
+    requires:
+      - libXext
+      - libXt
+      - libXmu
+      - libXpm
+    dependencies:
+      - bison
+      - flex
+  - name: libXfixes
+    requires:
+      - libXext
+  - name: libXcomposite
+    requires:
+      - libXext
+      - libXfixes
+  - name: libXrender
+    requires:
+      - libXext
+  - name: libXdamage
+    requires:
+      - libXext
+      - libXfixes
+  - name: libXcursor
+    requires:
+      - libXext
+      - libXfixes
+      - libXrender
+  - name: libXfont
+    requires:
+      - libXext
+    dependencies:
+      - freetype2
+      - libfontenc
+  - name: libXft
+    requires:
+      - libXext
+      - libXrender
+    dependencies:
+      - freetype2
+      - fontconfig
+  - name: libXi
+    requires:
+      - libXext
+      - libXfixes
+    dependencies:
+      - xmlto
+      - asciidoc
+  - name: libXinerama
+    requires:
+      - libXext
+  - name: libxkbfile
+    requires:
+      - libXext
+  - name: libXrandr
+    requires:
+      - libXext
+      - libXrender
+  - name: libXRes
+    requires:
+      - libXext
+  - name: libXScrnSaver
+    requires:
+      - libXext
+  - name: libXtst
+    requires:
+      - libXext
+      - libXi
+  - name: libXv
+    requires:
+      - libXext
+  - name: libXvMC
+    requires:
+      - libXext
+      - libXv
+  - name: libXxf86dga
+    requires:
+      - libXext
+  - name: libXxf86vm
+    requires:
+      - libXext
