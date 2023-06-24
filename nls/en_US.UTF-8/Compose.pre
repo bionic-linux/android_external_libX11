@@ -215,10 +215,6 @@ XCOMM "₵" U20b5 CEDI SIGN
 <Multi_key> <equal> <Y>			: "¥"	yen # YEN SIGN
 <Multi_key> <y> <equal>			: "¥"	yen # YEN SIGN
 <Multi_key> <equal> <y>			: "¥"	yen # YEN SIGN
-<Multi_key> <Y> <minus>			: "¥"	yen # YEN SIGN
-<Multi_key> <minus> <Y>			: "¥"	yen # YEN SIGN
-<Multi_key> <y> <minus>			: "¥"	yen # YEN SIGN
-<Multi_key> <minus> <y>			: "¥"	yen # YEN SIGN
 
 XCOMM Dashes
 <Multi_key> <minus> <minus> <period>	: "–"	U2013 # EN DASH
