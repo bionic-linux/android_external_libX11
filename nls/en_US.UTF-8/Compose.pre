@@ -1215,18 +1215,12 @@ XCOMM Latin Extended-B
 <Multi_key> <o> <semicolon>			: "ǫ"	U01EB # LATIN SMALL LETTER O WITH OGONEK
 <Multi_key> <comma> <o>				: "ǫ"	U01EB # LATIN SMALL LETTER O WITH OGONEK
 <Multi_key> <o> <comma>				: "ǫ"	U01EB # LATIN SMALL LETTER O WITH OGONEK
-<dead_macron> <U01EA>				: "Ǭ"	U01EC # LATIN CAPITAL LETTER O WITH OGONEK AND MACRON
-<Multi_key> <macron> <U01EA>			: "Ǭ"	U01EC # LATIN CAPITAL LETTER O WITH OGONEK AND MACRON
-<Multi_key> <underscore> <U01EA>		: "Ǭ"	U01EC # LATIN CAPITAL LETTER O WITH OGONEK AND MACRON
 <dead_macron> <dead_ogonek> <O>			: "Ǭ"	U01EC # LATIN CAPITAL LETTER O WITH OGONEK AND MACRON
 <dead_macron> <Multi_key> <semicolon> <O>	: "Ǭ"	U01EC # LATIN CAPITAL LETTER O WITH OGONEK AND MACRON
 <Multi_key> <macron> <dead_ogonek> <O>		: "Ǭ"	U01EC # LATIN CAPITAL LETTER O WITH OGONEK AND MACRON
 <Multi_key> <macron> <semicolon> <O>		: "Ǭ"	U01EC # LATIN CAPITAL LETTER O WITH OGONEK AND MACRON
 <Multi_key> <underscore> <dead_ogonek> <O>	: "Ǭ"	U01EC # LATIN CAPITAL LETTER O WITH OGONEK AND MACRON
 <Multi_key> <underscore> <semicolon> <O>	: "Ǭ"	U01EC # LATIN CAPITAL LETTER O WITH OGONEK AND MACRON
-<dead_macron> <U01EB>				: "ǭ"	U01ED # LATIN SMALL LETTER O WITH OGONEK AND MACRON
-<Multi_key> <macron> <U01EB>			: "ǭ"	U01ED # LATIN SMALL LETTER O WITH OGONEK AND MACRON
-<Multi_key> <underscore> <U01EB>		: "ǭ"	U01ED # LATIN SMALL LETTER O WITH OGONEK AND MACRON
 <dead_macron> <dead_ogonek> <o>			: "ǭ"	U01ED # LATIN SMALL LETTER O WITH OGONEK AND MACRON
 <dead_macron> <Multi_key> <semicolon> <o>	: "ǭ"	U01ED # LATIN SMALL LETTER O WITH OGONEK AND MACRON
 <Multi_key> <macron> <dead_ogonek> <o>		: "ǭ"	U01ED # LATIN SMALL LETTER O WITH OGONEK AND MACRON
@@ -1386,18 +1380,12 @@ XCOMM Latin Extended-B
 <Multi_key> <period> <O>			: "Ȯ"	U022E # LATIN CAPITAL LETTER O WITH DOT ABOVE
 <dead_abovedot> <o>				: "ȯ"	U022F # LATIN SMALL LETTER O WITH DOT ABOVE
 <Multi_key> <period> <o>			: "ȯ"	U022F # LATIN SMALL LETTER O WITH DOT ABOVE
-<dead_macron> <U022E>				: "Ȱ"	U0230 # LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
-<Multi_key> <macron> <U022E>			: "Ȱ"	U0230 # LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
-<Multi_key> <underscore> <U022E>		: "Ȱ"	U0230 # LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
 <dead_macron> <dead_abovedot> <O>		: "Ȱ"	U0230 # LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
 <dead_macron> <Multi_key> <period> <O>		: "Ȱ"	U0230 # LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
 <Multi_key> <macron> <dead_abovedot> <O>	: "Ȱ"	U0230 # LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
 <Multi_key> <macron> <period> <O>		: "Ȱ"	U0230 # LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
 <Multi_key> <underscore> <dead_abovedot> <O>	: "Ȱ"	U0230 # LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
 <Multi_key> <underscore> <period> <O>		: "Ȱ"	U0230 # LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
-<dead_macron> <U022F>				: "ȱ"	U0231 # LATIN SMALL LETTER O WITH DOT ABOVE AND MACRON
-<Multi_key> <macron> <U022F>			: "ȱ"	U0231 # LATIN SMALL LETTER O WITH DOT ABOVE AND MACRON
-<Multi_key> <underscore> <U022F>		: "ȱ"	U0231 # LATIN SMALL LETTER O WITH DOT ABOVE AND MACRON
 <dead_macron> <dead_abovedot> <o>		: "ȱ"	U0231 # LATIN SMALL LETTER O WITH DOT ABOVE AND MACRON
 <dead_macron> <Multi_key> <period> <o>		: "ȱ"	U0231 # LATIN SMALL LETTER O WITH DOT ABOVE AND MACRON
 <Multi_key> <macron> <dead_abovedot> <o>	: "ȱ"	U0231 # LATIN SMALL LETTER O WITH DOT ABOVE AND MACRON
@@ -2073,9 +2061,6 @@ XCOMM Latin Extended Additional
 <dead_belowcircumflex> <e>			: "ḙ"	U1E19 # LATIN SMALL LETTER E WITH CIRCUMFLEX BELOW
 <dead_belowtilde> <E>				: "Ḛ"	U1E1A # LATIN CAPITAL LETTER E WITH TILDE BELOW
 <dead_belowtilde> <e>				: "ḛ"	U1E1B # LATIN SMALL LETTER E WITH TILDE BELOW
-<dead_breve> <U0228>				: "Ḝ"	U1E1C # LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
-<Multi_key> <U> <U0228>				: "Ḝ"	U1E1C # LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
-<Multi_key> <b> <U0228>				: "Ḝ"	U1E1C # LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
 <dead_breve> <dead_cedilla> <E>			: "Ḝ"	U1E1C # LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
 <dead_breve> <Multi_key> <comma> <E>		: "Ḝ"	U1E1C # LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
 <dead_breve> <Multi_key> <cedilla> <E>		: "Ḝ"	U1E1C # LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
@@ -2085,9 +2070,6 @@ XCOMM Latin Extended Additional
 <Multi_key> <b> <dead_cedilla> <E>		: "Ḝ"	U1E1C # LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
 <Multi_key> <b> <comma> <E>			: "Ḝ"	U1E1C # LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
 <Multi_key> <b> <cedilla> <E>			: "Ḝ"	U1E1C # LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE
-<dead_breve> <U0229>				: "ḝ"	U1E1D # LATIN SMALL LETTER E WITH CEDILLA AND BREVE
-<Multi_key> <U> <U0229>				: "ḝ"	U1E1D # LATIN SMALL LETTER E WITH CEDILLA AND BREVE
-<Multi_key> <b> <U0229>				: "ḝ"	U1E1D # LATIN SMALL LETTER E WITH CEDILLA AND BREVE
 <dead_breve> <dead_cedilla> <e>			: "ḝ"	U1E1D # LATIN SMALL LETTER E WITH CEDILLA AND BREVE
 <dead_breve> <Multi_key> <comma> <e>		: "ḝ"	U1E1D # LATIN SMALL LETTER E WITH CEDILLA AND BREVE
 <dead_breve> <Multi_key> <cedilla> <e>		: "ḝ"	U1E1D # LATIN SMALL LETTER E WITH CEDILLA AND BREVE
@@ -2554,15 +2536,11 @@ XCOMM Latin Extended Additional
 <dead_tilde> <Multi_key> <asciicircum> <a>	: "ẫ"	U1EAB # LATIN SMALL LETTER A WITH CIRCUMFLEX AND TILDE
 <Multi_key> <asciitilde> <dead_circumflex> <a>	: "ẫ"	U1EAB # LATIN SMALL LETTER A WITH CIRCUMFLEX AND TILDE
 <Multi_key> <asciitilde> <asciicircum> <a>	: "ẫ"	U1EAB # LATIN SMALL LETTER A WITH CIRCUMFLEX AND TILDE
-<dead_circumflex> <U1EA0>			: "Ậ"	U1EAC # LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND DOT BELOW
-<Multi_key> <asciicircum> <U1EA0>		: "Ậ"	U1EAC # LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND DOT BELOW
 <dead_circumflex> <dead_belowdot> <A>		: "Ậ"	U1EAC # LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND DOT BELOW
 <dead_circumflex> <Multi_key> <exclam> <A>	: "Ậ"	U1EAC # LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND DOT BELOW
 <Multi_key> <asciicircum> <dead_belowdot> <A>	: "Ậ"	U1EAC # LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND DOT BELOW
 <Multi_key> <asciicircum> <exclam> <A>		: "Ậ"	U1EAC # LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND DOT BELOW
 <dead_belowdot> <Acircumflex>			: "Ậ"	U1EAC # LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND DOT BELOW
-<dead_circumflex> <U1EA1>			: "ậ"	U1EAD # LATIN SMALL LETTER A WITH CIRCUMFLEX AND DOT BELOW
-<Multi_key> <asciicircum> <U1EA1>		: "ậ"	U1EAD # LATIN SMALL LETTER A WITH CIRCUMFLEX AND DOT BELOW
 <dead_circumflex> <dead_belowdot> <a>		: "ậ"	U1EAD # LATIN SMALL LETTER A WITH CIRCUMFLEX AND DOT BELOW
 <dead_circumflex> <Multi_key> <exclam> <a>	: "ậ"	U1EAD # LATIN SMALL LETTER A WITH CIRCUMFLEX AND DOT BELOW
 <Multi_key> <asciicircum> <dead_belowdot> <a>	: "ậ"	U1EAD # LATIN SMALL LETTER A WITH CIRCUMFLEX AND DOT BELOW
@@ -2630,9 +2608,6 @@ XCOMM Latin Extended Additional
 <dead_tilde> <Multi_key> <b> <a>		: "ẵ"	U1EB5 # LATIN SMALL LETTER A WITH BREVE AND TILDE
 <Multi_key> <asciitilde> <dead_breve> <a>	: "ẵ"	U1EB5 # LATIN SMALL LETTER A WITH BREVE AND TILDE
 <Multi_key> <asciitilde> <b> <a>		: "ẵ"	U1EB5 # LATIN SMALL LETTER A WITH BREVE AND TILDE
-<dead_breve> <U1EA0>				: "Ặ"	U1EB6 # LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW
-<Multi_key> <U> <U1EA0>				: "Ặ"	U1EB6 # LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW
-<Multi_key> <b> <U1EA0>				: "Ặ"	U1EB6 # LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW
 <dead_breve> <dead_belowdot> <A>		: "Ặ"	U1EB6 # LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW
 <dead_breve> <Multi_key> <exclam> <A>		: "Ặ"	U1EB6 # LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW
 <Multi_key> <U> <dead_belowdot> <A>		: "Ặ"	U1EB6 # LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW
@@ -2640,9 +2615,6 @@ XCOMM Latin Extended Additional
 <Multi_key> <b> <dead_belowdot> <A>		: "Ặ"	U1EB6 # LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW
 <Multi_key> <b> <exclam> <A>			: "Ặ"	U1EB6 # LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW
 <dead_belowdot> <Abreve>			: "Ặ"	U1EB6 # LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW
-<dead_breve> <U1EA1>				: "ặ"	U1EB7 # LATIN SMALL LETTER A WITH BREVE AND DOT BELOW
-<Multi_key> <U> <U1EA1>				: "ặ"	U1EB7 # LATIN SMALL LETTER A WITH BREVE AND DOT BELOW
-<Multi_key> <b> <U1EA1>				: "ặ"	U1EB7 # LATIN SMALL LETTER A WITH BREVE AND DOT BELOW
 <dead_breve> <dead_belowdot> <a>		: "ặ"	U1EB7 # LATIN SMALL LETTER A WITH BREVE AND DOT BELOW
 <dead_breve> <Multi_key> <exclam> <a>		: "ặ"	U1EB7 # LATIN SMALL LETTER A WITH BREVE AND DOT BELOW
 <Multi_key> <U> <dead_belowdot> <a>		: "ặ"	U1EB7 # LATIN SMALL LETTER A WITH BREVE AND DOT BELOW
