@@ -168,6 +168,42 @@ def parse_keysyms_headers(paths: Sequence[Path]) -> dict[str, str]:
 
 
 ################################################################################
+# Unicode names
+################################################################################
+
+
+def parse_unicode_name_aliases(path: Path) -> dict[str, str]:
+    aliases: dict[str, str] = {}
+    with path.open("rt", encoding="utf-8") as fd:
+        for line in map(lambda s: s.strip(), fd):
+            # Empty line or comment
+            if not line or line.startswith("#"):
+                continue
+            line = line.split("#")[0]
+            raw_codepoint, alias, category, *_ = map(
+                lambda s: s.strip(), line.split(";")
+            )
+            char = chr(int(raw_codepoint, 16))
+            if category == "correction":
+                aliases[char] = alias
+    return aliases
+
+
+def unicode_name(unicode_name_aliases: dict[str, str], c: str, is_first: bool) -> str:
+    # We want to use Unicode *corrected* names, but the Python API does not
+    # propose those. So we process the UCD by ourselves.
+    name = unicode_name_aliases.get(c) or unicodedata.name(c, None)
+    if name is None:
+        raise ValueError(f"Cannot find Unicode name for: “{c}” (U+{ord(c):0>4X})")
+    # RULE: remove “ACCENT” from the name, when the character is combining and
+    #       is not in first position
+    if not is_first and "COMBINING" in name and name.endswith("ACCENT"):
+        return name[:-7]
+    else:
+        return name
+
+
+################################################################################
 # Compose files
 ################################################################################
 
@@ -215,23 +251,11 @@ def unescape(s: str) -> str:
     return "".join(_unescape(s))
 
 
-def unicode_name(c: str, is_first: bool) -> str:
-    # TODO: we should use Unicode *corrected* names!
-    #       But the Python API does not propose those.
-    name = unicodedata.name(c, None)
-    if name is None:
-        raise ValueError(f"Cannot find Unicode name for: “{c}” (U+{ord(c):0>4X})")
-    # RULE: remove “ACCENT” from the name, when the character is combining and
-    #       is not in first position
-    if not is_first and "COMBINING" in name and name.endswith("ACCENT"):
-        return name[:-7]
-    else:
-        return name
-
-
-def make_comment(s: str) -> str:
+def make_comment(unicode_name_aliases: dict[str, str], s: str) -> str:
     """Make the comment of a Compose sequence, based on its result."""
-    return " plus ".join(unicode_name(c, k == 0) for k, c in enumerate(s))
+    return " plus ".join(
+        unicode_name(unicode_name_aliases, c, k == 0) for k, c in enumerate(s)
+    )
 
 
 def check_keysym(deprecated_keysyms: dict[str, str], n: int, keysym_name: str) -> str:
@@ -273,7 +297,11 @@ def check_keysym_sequence(
         return sequence
 
 
-def process_lines(fd: TextIOWrapper, keysyms_names: dict[str, str]):
+def process_lines(
+    fd: TextIOWrapper,
+    keysyms_names: dict[str, str],
+    unicode_name_aliases: dict[str, str],
+):
     multi_line_comment = False
     for n, line in enumerate(fd, start=1):
         # Handle pending multi-line comment
@@ -316,7 +344,7 @@ def process_lines(fd: TextIOWrapper, keysyms_names: dict[str, str]):
                     keysym = check_keysym(keysyms_names, n, m.group("keysym"))
                     if keysym != m.group("keysym"):
                         rewrite = True
-            expected_comment = make_comment(string)
+            expected_comment = make_comment(unicode_name_aliases, string)
             # Check if we have the expected comment
             # NOTE: Some APL sequences provide the combo of composed characters
             if not (
@@ -343,26 +371,37 @@ def process_lines(fd: TextIOWrapper, keysyms_names: dict[str, str]):
             raise ValueError(f"Cannot parse line: “{line}”")
 
 
-def process_file(path: Path, keysyms_names: dict[str, str]):
+def process_file(
+    path: Path, keysyms_names: dict[str, str], unicode_name_aliases: dict[str, str]
+):
     with path.open("rt", encoding="utf-8") as fd:
-        yield from process_lines(fd, keysyms_names)
+        yield from process_lines(fd, keysyms_names, unicode_name_aliases)
 
 
-def run(paths: Sequence[Path], write: bool, keysyms_headers: Sequence[Path]):
+def run(
+    paths: Sequence[Path],
+    write: bool,
+    keysyms_headers: Sequence[Path],
+    name_aliases_path: Path | None,
+):
     # Keysyms headers
     keysyms_names = parse_keysyms_headers(keysyms_headers)
+    # Unicode files
+    unicode_name_aliases = (
+        parse_unicode_name_aliases(name_aliases_path) if name_aliases_path else {}
+    )
     # Compose file
     for path in paths:
         print(f" Processing Compose file: {path} ".center(80, "="), file=sys.stderr)
         if write:
             with tempfile.NamedTemporaryFile("wt") as fd:
                 # Write to a temporary file
-                fd.writelines(process_file(path, keysyms_names))
+                fd.writelines(process_file(path, keysyms_names, unicode_name_aliases))
                 fd.flush()
                 # No error: now ovewrite the original file
                 shutil.copyfile(fd.name, path)
         else:
-            for _ in process_file(path, keysyms_names):
+            for _ in process_file(path, keysyms_names, unicode_name_aliases):
                 pass
 
 
@@ -380,6 +419,11 @@ def parse_args():
         default=DEFAULT_KEYSYMS_HEADERS_PREFIX,
         help="Keysym header prefix for default keysyms header files (default: %(default)s)",
     )
+    parser.add_argument(
+        "--unicode-name-aliases",
+        type=Path,
+        help="Name aliases file from the Unicode Character Database. Latest version available at: https://www.unicode.org/Public/UCD/latest/ucd/NameAliases.txt",
+    )
     parser.add_argument("--write", action="store_true", help="Write the compose file")
     return parser.parse_args()
 
@@ -392,4 +436,4 @@ if __name__ == "__main__":
         keysyms = args.keysyms
     else:
         keysyms = list(args.keysyms_prefix / path for path in DEFAULT_KEYSYMS_HEADERS)
-    run(args.input, args.write, keysyms)
+    run(args.input, args.write, keysyms, args.unicode_name_aliases)
