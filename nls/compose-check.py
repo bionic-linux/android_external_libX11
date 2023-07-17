@@ -16,6 +16,44 @@ import shutil
 import tempfile
 from typing import Any, Generator, Sequence
 import unicodedata
+from ctypes import (
+    c_char_p,
+    c_int,
+    c_uint32,
+    cdll,
+)
+from ctypes.util import find_library
+
+
+# Try to load xkbcommon
+if xkbcommon_path := find_library("xkbcommon"):
+    HAS_XKBCOMMON = True
+    xkbcommon = cdll.LoadLibrary(xkbcommon_path)
+
+    xkb_keysym_t = c_uint32
+    xkbcommon.xkb_keysym_from_name.argtypes = [c_char_p, c_int]
+    xkbcommon.xkb_keysym_from_name.restype = xkb_keysym_t
+
+    xkbcommon.xkb_keysym_to_utf32.argtypes = [xkb_keysym_t]
+    xkbcommon.xkb_keysym_to_utf32.restype = c_uint32
+
+    XKB_KEY_NoSymbol = 0
+    XKB_KEYSYM_NO_FLAGS = 0
+
+    def keysym_to_char(keysym_name: str) -> str:
+        keysym = xkbcommon.xkb_keysym_from_name(
+            keysym_name.encode("utf-8"), XKB_KEYSYM_NO_FLAGS
+        )
+        if keysym == XKB_KEY_NoSymbol:
+            raise ValueError(f"Unsupported keysym: “{keysym_name}”")
+        codepoint = xkbcommon.xkb_keysym_to_utf32(keysym)
+        if codepoint == 0:
+            raise ValueError(
+                f"Keysym cannot be translated to character: “{keysym_name}”"
+            )
+        return chr(codepoint)
+else:
+    HAS_XKBCOMMON = False
 
 
 SEQUENCE_PATTERN = re.compile(
@@ -101,6 +139,14 @@ def process_lines(fd: TextIOWrapper):
         # Handle compose sequence
         elif m := SEQUENCE_PATTERN.match(line):
             string = unescape(m.group("string"))
+            # Check keysym
+            if HAS_XKBCOMMON and m.group("keysym"):
+                keysym_char = keysym_to_char(m.group("keysym"))
+                if string != keysym_char:
+                    print(
+                        f"[ERROR] Line {n}: The keysym does not correspond to the character: expected “{string}”, got “{keysym_char}”.",
+                        file=sys.stderr,
+                    )
             expected_comment = make_comment(string)
             # Check if we have the expected comment
             # NOTE: Some APL sequences provide the combo of composed characters
