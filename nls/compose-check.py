@@ -136,7 +136,7 @@ def parse_keysyms_header(
                         continue
                     else:
                         print(
-                            f"[WARNING] Line {n}: Keep deprecated keysym “{name}”, because the reference keysyms “{ref}” is not supported by your version of xkbcommon."
+                            f"[WARNING] Line {n}: Keep deprecated keysym “{name}”; reference keysym “{ref}” is not supported by available xkbcommon."
                         )
                 else:
                     # Reference keysym
@@ -182,7 +182,7 @@ COMPOSE_ENTRY_PATTERN = re.compile(
 )
 """A pattern for Compose entries"""
 
-UNICODE_KEYSYM_PATTERN = re.compile(r"(U[0-9A-Fa-f]+)")
+UNICODE_KEYSYM_PATTERN = re.compile(r"\bU(?P<codepoint>[0-9A-Fa-f]+)\b")
 KEYSYM_PATTERN = re.compile(r"<(\w+)>")
 
 
@@ -235,8 +235,10 @@ def make_comment(s: str) -> str:
 
 
 def check_keysym(deprecated_keysyms: dict[str, str], n: int, keysym_name: str) -> str:
-    if UNICODE_KEYSYM_PATTERN.match(keysym_name):
-        return keysym_name
+    if m := UNICODE_KEYSYM_PATTERN.match(keysym_name):
+        # Reformat Unicode keysym
+        codepoint = int(m.group("codepoint"), 16)
+        return f"U{codepoint:0>4X}"
     ref = deprecated_keysyms.get(keysym_name)
     if keysym_name == ref:
         # Reference keysym
