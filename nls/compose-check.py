@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from dataclasses import dataclass
 import sys
 
 MINIMUM_PYTHON_VERSION = (3, 10)
@@ -19,10 +20,20 @@ import unicodedata
 from ctypes import (
     c_char_p,
     c_int,
+    c_size_t,
     c_uint32,
     cdll,
+    create_string_buffer,
 )
 from ctypes.util import find_library
+
+
+@dataclass
+class Configuration:
+    keysyms_names: dict[str, str]
+    unicode_name_aliases: dict[str, str]
+    prefer_unicode_keysym: bool
+
 
 ################################################################################
 # xkbcommon handling
@@ -39,6 +50,12 @@ if xkbcommon_path := find_library("xkbcommon"):
 
     xkbcommon.xkb_keysym_to_utf32.argtypes = [xkb_keysym_t]
     xkbcommon.xkb_keysym_to_utf32.restype = c_uint32
+
+    xkbcommon.xkb_utf32_to_keysym.argtypes = [c_uint32]
+    xkbcommon.xkb_utf32_to_keysym.restype = xkb_keysym_t
+
+    xkbcommon.xkb_keysym_get_name.argtypes = [xkb_keysym_t, c_char_p, c_size_t]
+    xkbcommon.xkb_keysym_get_name.restype = int
 
     XKB_KEY_NoSymbol = 0
     XKB_KEYSYM_NO_FLAGS = 0
@@ -58,6 +75,20 @@ if xkbcommon_path := find_library("xkbcommon"):
                 f"Keysym cannot be translated to character: “{keysym_name}”"
             )
         return chr(codepoint)
+
+    def char_to_keysym(char: str) -> str:
+        keysym = xkbcommon.xkb_utf32_to_keysym(ord(char))
+        if keysym == XKB_KEY_NoSymbol:
+            return ""
+        buf_len = 90
+        buf = create_string_buffer(buf_len)
+        n = xkbcommon.xkb_keysym_get_name(keysym, buf, c_size_t(buf_len))
+        if n < 0 or n >= buf_len:
+            raise ValueError(
+                f"Unsupported keysym: {keysym} (char: “U+{ord(char):4>X}”)"
+            )
+        else:
+            return buf.value.decode("utf-8")
 
 else:
     HAS_XKBCOMMON = False
@@ -258,12 +289,29 @@ def make_comment(unicode_name_aliases: dict[str, str], s: str) -> str:
     )
 
 
-def check_keysym(deprecated_keysyms: dict[str, str], n: int, keysym_name: str) -> str:
+def check_keysym(config: Configuration, n: int, keysym_name: str) -> str:
     if m := UNICODE_KEYSYM_PATTERN.match(keysym_name):
         # Reformat Unicode keysym
         codepoint = int(m.group("codepoint"), 16)
-        return f"U{codepoint:0>4X}"
-    ref = deprecated_keysyms.get(keysym_name)
+        unicode_keysym = f"U{codepoint:0>4X}"
+        if HAS_XKBCOMMON:
+            # Find the canonical keysym name using xkbcommon
+            keysym_name = char_to_keysym(chr(codepoint))
+            # We keep our normalized Unicode in case xkbcommon returns a long
+            # Unicode keysym, or we explicitely prefer Unicode keysyms, or
+            # the named keysym is deprecated.
+            if (
+                unicode_keysym == keysym_name
+                or keysym_name.startswith("U0")
+                or config.prefer_unicode_keysym
+                or config.keysyms_names.get(keysym_name) != keysym_name
+            ):
+                return unicode_keysym
+            else:
+                return keysym_name
+        else:
+            return unicode_keysym
+    ref = config.keysyms_names.get(keysym_name)
     if keysym_name == ref:
         # Reference keysym
         return keysym_name
@@ -282,12 +330,10 @@ def check_keysym(deprecated_keysyms: dict[str, str], n: int, keysym_name: str) -
         return ref
 
 
-def check_keysym_sequence(
-    deprecated_keysyms: dict[str, str], n: int, sequence: str
-) -> str:
+def check_keysym_sequence(config: Configuration, n: int, sequence: str) -> str:
     subsitutions: dict[str, str] = {}
     for keysym_name in KEYSYM_PATTERN.findall(sequence):
-        keysym_nameʹ = check_keysym(deprecated_keysyms, n, keysym_name)
+        keysym_nameʹ = check_keysym(config, n, keysym_name)
         if keysym_nameʹ != keysym_name:
             subsitutions[keysym_name] = keysym_nameʹ
     if subsitutions:
@@ -297,11 +343,7 @@ def check_keysym_sequence(
         return sequence
 
 
-def process_lines(
-    fd: TextIOWrapper,
-    keysyms_names: dict[str, str],
-    unicode_name_aliases: dict[str, str],
-):
+def process_lines(fd: TextIOWrapper, config: Configuration):
     multi_line_comment = False
     for n, line in enumerate(fd, start=1):
         # Handle pending multi-line comment
@@ -325,8 +367,8 @@ def process_lines(
             string = unescape(m.group("string"))
             rewrite = False
             # Check sequence keysyms
-            if keysyms_names:
-                sequence = check_keysym_sequence(keysyms_names, n, m.group("sequence"))
+            if config.keysyms_names:
+                sequence = check_keysym_sequence(config, n, m.group("sequence"))
                 if sequence != m.group("sequence"):
                     rewrite = True
             else:
@@ -340,11 +382,11 @@ def process_lines(
                             f"[ERROR] Line {n}: The keysym does not correspond to the character: expected “{string}”, got “{keysym_char}”.",
                             file=sys.stderr,
                         )
-                if keysyms_names:
-                    keysym = check_keysym(keysyms_names, n, m.group("keysym"))
+                if config.keysyms_names:
+                    keysym = check_keysym(config, n, m.group("keysym"))
                     if keysym != m.group("keysym"):
                         rewrite = True
-            expected_comment = make_comment(unicode_name_aliases, string)
+            expected_comment = make_comment(config.unicode_name_aliases, string)
             # Check if we have the expected comment
             # NOTE: Some APL sequences provide the combo of composed characters
             if not (
@@ -371,11 +413,9 @@ def process_lines(
             raise ValueError(f"Cannot parse line: “{line}”")
 
 
-def process_file(
-    path: Path, keysyms_names: dict[str, str], unicode_name_aliases: dict[str, str]
-):
+def process_file(path: Path, config: Configuration):
     with path.open("rt", encoding="utf-8") as fd:
-        yield from process_lines(fd, keysyms_names, unicode_name_aliases)
+        yield from process_lines(fd, config)
 
 
 def run(
@@ -383,6 +423,7 @@ def run(
     write: bool,
     keysyms_headers: Sequence[Path],
     name_aliases_path: Path | None,
+    prefer_named_keysyms: bool,
 ):
     # Keysyms headers
     keysyms_names = parse_keysyms_headers(keysyms_headers)
@@ -390,18 +431,23 @@ def run(
     unicode_name_aliases = (
         parse_unicode_name_aliases(name_aliases_path) if name_aliases_path else {}
     )
+    config = Configuration(
+        keysyms_names=keysyms_names,
+        unicode_name_aliases=unicode_name_aliases,
+        prefer_unicode_keysym=not prefer_named_keysyms,
+    )
     # Compose file
     for path in paths:
         print(f" Processing Compose file: {path} ".center(80, "="), file=sys.stderr)
         if write:
             with tempfile.NamedTemporaryFile("wt") as fd:
                 # Write to a temporary file
-                fd.writelines(process_file(path, keysyms_names, unicode_name_aliases))
+                fd.writelines(process_file(path, config))
                 fd.flush()
                 # No error: now ovewrite the original file
                 shutil.copyfile(fd.name, path)
         else:
-            for _ in process_file(path, keysyms_names, unicode_name_aliases):
+            for _ in process_file(path, config):
                 pass
 
 
@@ -424,6 +470,11 @@ def parse_args():
         type=Path,
         help="Name aliases file from the Unicode Character Database. Latest version available at: https://www.unicode.org/Public/UCD/latest/ucd/NameAliases.txt",
     )
+    parser.add_argument(
+        "--prefer-named-keysyms",
+        action="store_true",
+        help="Prefer named keysyms over Unicode keysyms",
+    )
     parser.add_argument("--write", action="store_true", help="Write the compose file")
     return parser.parse_args()
 
@@ -436,4 +487,10 @@ if __name__ == "__main__":
         keysyms = args.keysyms
     else:
         keysyms = list(args.keysyms_prefix / path for path in DEFAULT_KEYSYMS_HEADERS)
-    run(args.input, args.write, keysyms, args.unicode_name_aliases)
+    run(
+        args.input,
+        args.write,
+        keysyms,
+        args.unicode_name_aliases,
+        args.prefer_named_keysyms,
+    )
