@@ -145,12 +145,49 @@ KEYSYM_ENTRY_PATTERN = re.compile(
 EXTRA_DEPRECATED_KEYSYMS = ("Ext16bit_L", "Ext16bit_R")
 
 
+def handle_keysym_match(
+    keysyms: dict[int, str],
+    keysyms_names: dict[str, str],
+    line_nbr: int,
+    m: re.Match[str],
+):
+    if m.group("evdev"):
+        # _EVDEVK macro
+        keysym = 0x10081000 + int(m.group("value"), 16)
+    else:
+        keysym = int(m.group("value"), 16)
+    name = (m.group("prefix") or "") + m.group("name")
+    if ref := keysyms.get(keysym):
+        # Deprecated, because there is a previous definition with other name.
+        # Ensure that the replacement keysym is supported by xkbcommon.
+        if libxkbcommon and libxkbcommon.is_invalid_keysym_name(ref):
+            print(
+                f"[WARNING] Line {line_nbr}: Keep deprecated keysym “{name}”; reference keysym “{ref}” is not supported by available xkbcommon."
+            )
+        else:
+            keysyms_names[name] = ref
+            return
+    else:
+        # Reference keysym
+        keysyms[keysym] = name
+    if (
+        m.group("deprecated")
+        or m.group("unicode")
+        or m.group("name") in EXTRA_DEPRECATED_KEYSYMS
+    ):
+        # Explicitely deprecated
+        keysyms_names[name] = ""
+    else:
+        # Reference keysym
+        keysyms_names[name] = name
+
+
 def parse_keysyms_header(
     path: Path, keysyms: dict[int, str], keysyms_names: dict[str, str]
 ):
     with path.open("rt", encoding="utf-8") as fd:
         pending_multine_comment = False
-        for n, line in enumerate(map(lambda l: l.strip(), fd)):
+        for line_nbr, line in enumerate(map(lambda l: l.strip(), fd)):
             if not line:
                 # Skip empty line
                 pass
@@ -170,35 +207,8 @@ def parse_keysyms_header(
                 # Skip C macros
                 pass
             elif m := KEYSYM_ENTRY_PATTERN.match(line):
-                if m.group("evdev"):
-                    # _EVDEVK macro
-                    keysym = 0x10081000 + int(m.group("value"), 16)
-                else:
-                    keysym = int(m.group("value"), 16)
-                name = (m.group("prefix") or "") + m.group("name")
-                if ref := keysyms.get(keysym):
-                    # Deprecated, because there is a previous definition with other name.
-                    # Ensure that the replacement keysym is supported by xkbcommon.
-                    if libxkbcommon and libxkbcommon.is_invalid_keysym_name(ref):
-                        print(
-                            f"[WARNING] Line {n}: Keep deprecated keysym “{name}”; reference keysym “{ref}” is not supported by available xkbcommon."
-                        )
-                    else:
-                        keysyms_names[name] = ref
-                        continue
-                else:
-                    # Reference keysym
-                    keysyms[keysym] = name
-                if (
-                    m.group("deprecated")
-                    or m.group("unicode")
-                    or m.group("name") in EXTRA_DEPRECATED_KEYSYMS
-                ):
-                    # Explicitely deprecated
-                    keysyms_names[name] = ""
-                else:
-                    # Reference keysym
-                    keysyms_names[name] = name
+                # Valid keysym entry
+                handle_keysym_match(keysyms, keysyms_names, line_nbr, m)
             else:
                 raise ValueError(f"Cannot parse header “{path}” line: {line}")
 
