@@ -14,6 +14,7 @@ if sys.version_info < MINIMUM_PYTHON_VERSION:
 import argparse
 import ctypes
 import ctypes.util
+import logging
 import re
 import shutil
 import tempfile
@@ -28,6 +29,7 @@ from typing import Any, Generator, Sequence
 # Utils
 ################################################################################
 
+
 @dataclass
 class Configuration:
     keysyms_names: dict[str, str]
@@ -35,10 +37,13 @@ class Configuration:
     prefer_unicode_keysym: bool
 
 
+logger = logging.getLogger(__name__)
+
+
 def file_only(category: str, path: Path):
     """Check file"""
     if not path.is_file():
-        print(f"[ERROR] Invalid {category} file: {path}")
+        logger.error(f"Invalid {category} file: {path}")
     return path.is_file()
 
 
@@ -177,8 +182,8 @@ def handle_keysym_match(
         # Deprecated, because there is a previous definition with other name.
         # Ensure that the replacement keysym is supported by xkbcommon.
         if libxkbcommon and libxkbcommon.is_invalid_keysym_name(ref):
-            print(
-                f"[WARNING] Line {line_nbr}: Keep deprecated keysym “{name}”; reference keysym “{ref}” is not supported by available xkbcommon."
+            logger.warning(
+                f"Line {line_nbr}: Keep deprecated keysym “{name}”; reference keysym “{ref}” is not supported by available xkbcommon."
             )
         else:
             keysyms_names[name] = ref
@@ -233,7 +238,7 @@ def parse_keysyms_headers(paths: Sequence[Path]) -> dict[str, str]:
     keysyms: dict[int, str] = {}
     keysyms_names: dict[str, str] = {}
     for path in paths:
-        print(processing_file_message("keysym header", path), file=sys.stderr)
+        logger.info(processing_file_message("keysym header", path))
         parse_keysyms_header(path, keysyms, keysyms_names)
     return keysyms_names
 
@@ -245,7 +250,7 @@ def parse_keysyms_headers(paths: Sequence[Path]) -> dict[str, str]:
 
 def parse_unicode_name_aliases(path: Path) -> dict[str, str]:
     aliases: dict[str, str] = {}
-    print(processing_file_message("Unicode name aliases", path), file=sys.stderr)
+    logger.info(processing_file_message("Unicode name aliases", path))
     with path.open("rt", encoding="utf-8") as fd:
         for line in map(lambda s: s.strip(), fd):
             # Empty line or comment
@@ -357,16 +362,16 @@ def check_keysym(config: Configuration, n: int, keysym_name: str) -> str:
         # Reference keysym
         return keysym_name
     elif ref is None:
-        print(f"[ERROR] Line {n}: Unsupported keysym “{keysym_name}”")
+        logger.error(f"Line {n}: Unsupported keysym “{keysym_name}”")
         return keysym_name
     elif ref == "":
         # Deprecated: keep keysym
-        print(f"[WARNING] Line {n}: Deprecated keysym “{keysym_name}”.")
+        logger.warning(f"Line {n}: Deprecated keysym “{keysym_name}”.")
         return keysym_name
     else:
         # Deprecated alias: return reference keysym
-        print(
-            f"[WARNING] Line {n}: Deprecated keysym “{keysym_name}”. Please use “{ref}” instead."
+        logger.warning(
+            f"Line {n}: Deprecated keysym “{keysym_name}”. Please use “{ref}” instead."
         )
         return ref
 
@@ -419,9 +424,8 @@ def process_compose_lines(fd: TextIOWrapper, config: Configuration):
                 if libxkbcommon:
                     keysym_char = libxkbcommon.keysym_to_char(m.group("keysym"))
                     if string != keysym_char:
-                        print(
-                            f"[ERROR] Line {n}: The keysym does not correspond to the character: expected “{string}”, got “{keysym_char}”.",
-                            file=sys.stderr,
+                        logger.error(
+                            f"Line {n}: The keysym does not correspond to the character: expected “{string}”, got “{keysym_char}”.",
                         )
                 if config.keysyms_names:
                     keysym = check_keysym(config, n, m.group("keysym"))
@@ -434,10 +438,9 @@ def process_compose_lines(fd: TextIOWrapper, config: Configuration):
                 m.group("comment") == expected_comment
                 or (m.group("comment") and m.group("comment")[4:] == expected_comment)
             ):
-                print(
-                    f"[WARNING] Line {n}: Expected “{expected_comment}” comment, "
+                logger.warning(
+                    f"Line {n}: Expected “{expected_comment}” comment, "
                     f"got: “{m.group('comment')}”",
-                    file=sys.stderr,
                 )
                 rewrite = True
             # Rewrite entry if necessary
@@ -480,7 +483,7 @@ def run(
     )
     # Compose files
     for path in paths:
-        print(processing_file_message("Compose", path), file=sys.stderr)
+        logger.info(processing_file_message("Compose", path))
         if write:
             with tempfile.NamedTemporaryFile("wt") as fd:
                 # Write to a temporary file
@@ -522,6 +525,14 @@ def parse_args():
 
 
 if __name__ == "__main__":
+    # Logging setup
+    logFormatter = logging.Formatter("[%(levelname)s] %(message)s")
+    logHandler = logging.StreamHandler(sys.stderr)
+    logHandler.setFormatter(logFormatter)
+    logger.addHandler(logHandler)
+    logger.setLevel(logging.INFO)
+
+    # Parse CLI args
     args = parse_args()
     if args.no_keysyms:
         keysyms = []
@@ -535,6 +546,7 @@ if __name__ == "__main__":
         and file_only("Unicode name aliases", args.unicode_name_aliases)
         else None
     )
+
     run(
         list(filter(partial(file_only, "Compose"), args.input)),
         args.write,
