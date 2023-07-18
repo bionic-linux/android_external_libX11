@@ -390,9 +390,57 @@ def check_keysym_sequence(config: Configuration, n: int, sequence: str) -> str:
         return sequence
 
 
+def handle_compose_entry_match(
+    config: Configuration, line_nbr: int, m: re.Match[str]
+) -> str | None:
+    string = unescape(m.group("string"))
+    rewrite = False
+    # Check sequence keysyms
+    if config.keysyms_names:
+        sequence = check_keysym_sequence(config, line_nbr, m.group("sequence"))
+        if sequence != m.group("sequence"):
+            rewrite = True
+    else:
+        sequence = m.group("sequence")
+    # Check result keysym
+    if keysym := m.group("keysym"):
+        if libxkbcommon:
+            keysym_char = libxkbcommon.keysym_to_char(m.group("keysym"))
+            if string != keysym_char:
+                logger.error(
+                    f"Line {line_nbr}: The keysym does not correspond to the character: expected “{string}”, got “{keysym_char}”.",
+                )
+        if config.keysyms_names:
+            keysym = check_keysym(config, line_nbr, m.group("keysym"))
+            if keysym != m.group("keysym"):
+                rewrite = True
+    expected_comment = make_comment(config.unicode_name_aliases, string)
+    # Check if we have the expected comment
+    # NOTE: Some APL sequences provide the combo of composed characters
+    if not (
+        m.group("comment") == expected_comment
+        or (m.group("comment") and m.group("comment")[4:] == expected_comment)
+    ):
+        logger.warning(
+            f"Line {line_nbr}: Expected “{expected_comment}” comment, "
+            f"got: “{m.group('comment')}”",
+        )
+        rewrite = True
+    # Rewrite entry if necessary
+    if rewrite:
+        keysym = "" if keysym is None else f"\t{keysym}"
+        assert (len(string) == 1 and m.group("keysym") is not None) ^ (
+            len(string) > 1 and m.group("keysym") is None
+        )
+        comment_space = " " if len(string) == 1 else m.group("space") or "\t"
+        return f"""{sequence}: "{m.group('string')}"{keysym}{comment_space}# {expected_comment}\n"""
+    else:
+        return None
+
+
 def process_compose_lines(fd: TextIOWrapper, config: Configuration):
     multi_line_comment = False
-    for n, line in enumerate(fd, start=1):
+    for line_nbr, line in enumerate(fd, start=1):
         # Handle pending multi-line comment
         if multi_line_comment:
             if line.strip().endswith("*/"):
@@ -405,9 +453,7 @@ def process_compose_lines(fd: TextIOWrapper, config: Configuration):
             else:
                 yield line
         # Handle single-line comment & include
-        elif not line.strip() or any(
-            line.startswith(s) for s in ("#", "include")
-        ):
+        elif not line.strip() or any(line.startswith(s) for s in ("#", "include")):
             yield line
         # Handle start of a multi-line comment
         elif line.startswith("/*"):
@@ -417,47 +463,8 @@ def process_compose_lines(fd: TextIOWrapper, config: Configuration):
             yield line
         # Handle compose sequence
         elif m := COMPOSE_ENTRY_PATTERN.match(line):
-            string = unescape(m.group("string"))
-            rewrite = False
-            # Check sequence keysyms
-            if config.keysyms_names:
-                sequence = check_keysym_sequence(config, n, m.group("sequence"))
-                if sequence != m.group("sequence"):
-                    rewrite = True
-            else:
-                sequence = m.group("sequence")
-            # Check result keysym
-            if keysym := m.group("keysym"):
-                if libxkbcommon:
-                    keysym_char = libxkbcommon.keysym_to_char(m.group("keysym"))
-                    if string != keysym_char:
-                        logger.error(
-                            f"Line {n}: The keysym does not correspond to the character: expected “{string}”, got “{keysym_char}”.",
-                        )
-                if config.keysyms_names:
-                    keysym = check_keysym(config, n, m.group("keysym"))
-                    if keysym != m.group("keysym"):
-                        rewrite = True
-            expected_comment = make_comment(config.unicode_name_aliases, string)
-            # Check if we have the expected comment
-            # NOTE: Some APL sequences provide the combo of composed characters
-            if not (
-                m.group("comment") == expected_comment
-                or (m.group("comment") and m.group("comment")[4:] == expected_comment)
-            ):
-                logger.warning(
-                    f"Line {n}: Expected “{expected_comment}” comment, "
-                    f"got: “{m.group('comment')}”",
-                )
-                rewrite = True
-            # Rewrite entry if necessary
-            if rewrite:
-                keysym = "" if keysym is None else f"\t{keysym}"
-                assert (len(string) == 1 and m.group("keysym") is not None) ^ (
-                    len(string) > 1 and m.group("keysym") is None
-                )
-                comment_space = " " if len(string) == 1 else m.group("space") or "\t"
-                yield f"""{sequence}: "{m.group('string')}"{keysym}{comment_space}# {expected_comment}\n"""
+            if lineʹ := handle_compose_entry_match(config, line_nbr, m):
+                yield lineʹ
             else:
                 yield line
         else:
