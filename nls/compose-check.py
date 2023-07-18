@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from __future__ import annotations
+from functools import partial
 
 import sys
 
@@ -23,11 +24,26 @@ from pathlib import Path
 from typing import Any, Generator, Sequence
 
 
+################################################################################
+# Utils
+################################################################################
+
 @dataclass
 class Configuration:
     keysyms_names: dict[str, str]
     unicode_name_aliases: dict[str, str]
     prefer_unicode_keysym: bool
+
+
+def file_only(category: str, path: Path):
+    """Check file"""
+    if not path.is_file():
+        print(f"[ERROR] Invalid {category} file: {path}")
+    return path.is_file()
+
+
+def processing_file_message(category: str, path: Path):
+    return f"=== Processing {category} file: {path} ==="
 
 
 ################################################################################
@@ -217,11 +233,8 @@ def parse_keysyms_headers(paths: Sequence[Path]) -> dict[str, str]:
     keysyms: dict[int, str] = {}
     keysyms_names: dict[str, str] = {}
     for path in paths:
-        if not path.is_file():
-            print(f"[ERROR] Cannot open keysym header file: {path}")
-        else:
-            print(f" Processing header file: {path} ".center(80, "="), file=sys.stderr)
-            parse_keysyms_header(path, keysyms, keysyms_names)
+        print(processing_file_message("keysym header", path), file=sys.stderr)
+        parse_keysyms_header(path, keysyms, keysyms_names)
     return keysyms_names
 
 
@@ -232,6 +245,7 @@ def parse_keysyms_headers(paths: Sequence[Path]) -> dict[str, str]:
 
 def parse_unicode_name_aliases(path: Path) -> dict[str, str]:
     aliases: dict[str, str] = {}
+    print(processing_file_message("Unicode name aliases", path), file=sys.stderr)
     with path.open("rt", encoding="utf-8") as fd:
         for line in map(lambda s: s.strip(), fd):
             # Empty line or comment
@@ -256,7 +270,7 @@ def unicode_name(unicode_name_aliases: dict[str, str], c: str, is_first: bool) -
     # RULE: remove “ACCENT” from the name, when the character is combining and
     #       is not in first position
     if not is_first and "COMBINING" in name and name.endswith("ACCENT"):
-        return name[:-7]
+        return name.removesuffix(" ACCENT")
     else:
         return name
 
@@ -370,7 +384,7 @@ def check_keysym_sequence(config: Configuration, n: int, sequence: str) -> str:
         return sequence
 
 
-def process_lines(fd: TextIOWrapper, config: Configuration):
+def process_compose_lines(fd: TextIOWrapper, config: Configuration):
     multi_line_comment = False
     for n, line in enumerate(fd, start=1):
         # Handle pending multi-line comment
@@ -440,9 +454,9 @@ def process_lines(fd: TextIOWrapper, config: Configuration):
             raise ValueError(f"Cannot parse line: “{line}”")
 
 
-def process_file(path: Path, config: Configuration):
+def process_compose_file(path: Path, config: Configuration):
     with path.open("rt", encoding="utf-8") as fd:
-        yield from process_lines(fd, config)
+        yield from process_compose_lines(fd, config)
 
 
 def run(
@@ -458,23 +472,24 @@ def run(
     unicode_name_aliases = (
         parse_unicode_name_aliases(name_aliases_path) if name_aliases_path else {}
     )
+    # Set config
     config = Configuration(
         keysyms_names=keysyms_names,
         unicode_name_aliases=unicode_name_aliases,
         prefer_unicode_keysym=not prefer_named_keysyms,
     )
-    # Compose file
+    # Compose files
     for path in paths:
-        print(f" Processing Compose file: {path} ".center(80, "="), file=sys.stderr)
+        print(processing_file_message("Compose", path), file=sys.stderr)
         if write:
             with tempfile.NamedTemporaryFile("wt") as fd:
                 # Write to a temporary file
-                fd.writelines(process_file(path, config))
+                fd.writelines(process_compose_file(path, config))
                 fd.flush()
                 # No error: now ovewrite the original file
                 shutil.copyfile(fd.name, path)
         else:
-            for _ in process_file(path, config):
+            for _ in process_compose_file(path, config):
                 pass
 
 
@@ -514,10 +529,16 @@ if __name__ == "__main__":
         keysyms = args.keysyms
     else:
         keysyms = list(args.keysyms_prefix / path for path in DEFAULT_KEYSYMS_HEADERS)
+    unicode_name_aliases = (
+        args.unicode_name_aliases
+        if args.unicode_name_aliases
+        and file_only("Unicode name aliases", args.unicode_name_aliases)
+        else None
+    )
     run(
-        args.input,
+        list(filter(partial(file_only, "Compose"), args.input)),
         args.write,
-        keysyms,
-        args.unicode_name_aliases,
+        list(filter(partial(file_only, "keysyms header"), keysyms)),
+        unicode_name_aliases,
         args.prefer_named_keysyms,
     )
