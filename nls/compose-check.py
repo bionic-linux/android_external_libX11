@@ -35,6 +35,7 @@ class Configuration:
     keysyms_names: dict[str, str]
     unicode_name_aliases: dict[str, str]
     prefer_unicode_keysym: bool
+    convert_xcomm: bool
 
 
 logger = logging.getLogger(__name__)
@@ -397,9 +398,15 @@ def process_compose_lines(fd: TextIOWrapper, config: Configuration):
             if line.strip().endswith("*/"):
                 multi_line_comment = False
             yield line
+        # Handle XCOMM comments
+        elif line.startswith("XCOMM"):
+            if config.convert_xcomm:
+                yield "#" + line.removeprefix("XCOMM")
+            else:
+                yield line
         # Handle single-line comment & include
         elif not line.strip() or any(
-            line.startswith(s) for s in ("XCOMM", "#", "include")
+            line.startswith(s) for s in ("#", "include")
         ):
             yield line
         # Handle start of a multi-line comment
@@ -468,6 +475,7 @@ def run(
     keysyms_headers: Sequence[Path],
     name_aliases_path: Path | None,
     prefer_named_keysyms: bool,
+    keep_xcomm: bool,
 ):
     # Keysyms headers
     keysyms_names = parse_keysyms_headers(keysyms_headers)
@@ -480,6 +488,7 @@ def run(
         keysyms_names=keysyms_names,
         unicode_name_aliases=unicode_name_aliases,
         prefer_unicode_keysym=not prefer_named_keysyms,
+        convert_xcomm=not keep_xcomm,
     )
     # Compose files
     for path in paths:
@@ -520,6 +529,11 @@ def parse_args():
         action="store_true",
         help="Prefer named keysyms over Unicode keysyms",
     )
+    parser.add_argument(
+        "--keep-xcomm",
+        action="store_true",
+        help="Do NOT convert XCOMM comments to # comments",
+    )
     parser.add_argument("--write", action="store_true", help="Write the compose file")
     return parser.parse_args()
 
@@ -553,4 +567,5 @@ if __name__ == "__main__":
         list(filter(partial(file_only, "keysyms header"), keysyms)),
         unicode_name_aliases,
         args.prefer_named_keysyms,
+        args.keep_xcomm,
     )
