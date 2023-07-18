@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from dataclasses import dataclass
+from __future__ import annotations
+
 import sys
 
 MINIMUM_PYTHON_VERSION = (3, 10)
@@ -10,22 +11,16 @@ if sys.version_info < MINIMUM_PYTHON_VERSION:
     )
 
 import argparse
-from io import TextIOWrapper
-from pathlib import Path
+import ctypes
+import ctypes.util
 import re
 import shutil
 import tempfile
-from typing import Any, DefaultDict, Generator, Sequence
 import unicodedata
-from ctypes import (
-    c_char_p,
-    c_int,
-    c_size_t,
-    c_uint32,
-    cdll,
-    create_string_buffer,
-)
-from ctypes.util import find_library
+from dataclasses import dataclass
+from io import TextIOWrapper
+from pathlib import Path
+from typing import Any, Generator, Sequence
 
 
 @dataclass
@@ -39,60 +34,83 @@ class Configuration:
 # xkbcommon handling
 ################################################################################
 
-# Try to load xkbcommon
-if xkbcommon_path := find_library("xkbcommon"):
-    HAS_XKBCOMMON = True
-    xkbcommon = cdll.LoadLibrary(xkbcommon_path)
 
-    xkb_keysym_t = c_uint32
-    xkbcommon.xkb_keysym_from_name.argtypes = [c_char_p, c_int]
-    xkbcommon.xkb_keysym_from_name.restype = xkb_keysym_t
+xkb_keysym_t = ctypes.c_uint32
 
-    xkbcommon.xkb_keysym_to_utf32.argtypes = [xkb_keysym_t]
-    xkbcommon.xkb_keysym_to_utf32.restype = c_uint32
 
-    xkbcommon.xkb_utf32_to_keysym.argtypes = [c_uint32]
-    xkbcommon.xkb_utf32_to_keysym.restype = xkb_keysym_t
-
-    xkbcommon.xkb_keysym_get_name.argtypes = [xkb_keysym_t, c_char_p, c_size_t]
-    xkbcommon.xkb_keysym_get_name.restype = int
-
+class Xkbcommon:
     XKB_KEY_NoSymbol = 0
     XKB_KEYSYM_NO_FLAGS = 0
 
-    def xkb_keysym_from_name(keysym_name: str) -> int:
-        return xkbcommon.xkb_keysym_from_name(
-            keysym_name.encode("utf-8"), XKB_KEYSYM_NO_FLAGS
+    def __init__(self, xkbcommon_path):
+        self._lib = ctypes.cdll.LoadLibrary(xkbcommon_path)
+
+        self._lib.xkb_keysym_from_name.argtypes = [ctypes.c_char_p, ctypes.c_int]
+        self._lib.xkb_keysym_from_name.restype = xkb_keysym_t
+
+        self._lib.xkb_keysym_to_utf32.argtypes = [xkb_keysym_t]
+        self._lib.xkb_keysym_to_utf32.restype = ctypes.c_uint32
+
+        self._lib.xkb_utf32_to_keysym.argtypes = [ctypes.c_uint32]
+        self._lib.xkb_utf32_to_keysym.restype = xkb_keysym_t
+
+        self._lib.xkb_keysym_get_name.argtypes = [
+            xkb_keysym_t,
+            ctypes.c_char_p,
+            ctypes.c_size_t,
+        ]
+        self._lib.xkb_keysym_get_name.restype = int
+
+    @classmethod
+    def load(cls) -> Xkbcommon | None:
+        """Try to load xkbcommon"""
+        if xkbcommon_path := ctypes.util.find_library("xkbcommon"):
+            return cls(xkbcommon_path)
+        else:
+            return None
+
+    def keysym_from_name(self, keysym_name: str) -> int:
+        return self._lib.xkb_keysym_from_name(
+            keysym_name.encode("utf-8"), self.XKB_KEYSYM_NO_FLAGS
         )
 
-    def keysym_to_char(keysym_name: str) -> str:
-        keysym = xkb_keysym_from_name(keysym_name)
-        if keysym == XKB_KEY_NoSymbol:
+    def is_invalid_keysym(self, keysym: int) -> bool:
+        return keysym == self.XKB_KEY_NoSymbol
+
+    def is_invalid_keysym_name(self, name: str) -> bool:
+        return self.is_invalid_keysym(self.keysym_from_name(name))
+
+    def keysym_to_char(self, keysym_name: str) -> str:
+        keysym = self.keysym_from_name(keysym_name)
+        if self.is_invalid_keysym(keysym):
             raise ValueError(f"Unsupported keysym: “{keysym_name}”")
-        codepoint = xkbcommon.xkb_keysym_to_utf32(keysym)
+        codepoint = self._lib.xkb_keysym_to_utf32(keysym)
         if codepoint == 0:
             raise ValueError(
                 f"Keysym cannot be translated to character: “{keysym_name}”"
             )
         return chr(codepoint)
 
-    def char_to_keysym(char: str) -> str:
-        keysym = xkbcommon.xkb_utf32_to_keysym(ord(char))
-        if keysym == XKB_KEY_NoSymbol:
-            return ""
+    def keysym_get_name(self, keysym: int) -> str:
         buf_len = 90
-        buf = create_string_buffer(buf_len)
-        n = xkbcommon.xkb_keysym_get_name(keysym, buf, c_size_t(buf_len))
-        if n < 0 or n >= buf_len:
-            raise ValueError(
-                f"Unsupported keysym: {keysym} (char: “U+{ord(char):4>X}”)"
-            )
+        buf = ctypes.create_string_buffer(buf_len)
+        n = self._lib.xkb_keysym_get_name(keysym, buf, ctypes.c_size_t(buf_len))
+        if n < 0:
+            raise ValueError(f"Unsupported keysym: 0x{keysym:0>4X})")
+        elif n >= buf_len:
+            raise ValueError(f"Buffer is not big enough: expected at least {n}.")
         else:
             return buf.value.decode("utf-8")
 
-else:
-    HAS_XKBCOMMON = False
+    def char_to_keysym(self, char: str) -> str:
+        keysym = self._lib.xkb_utf32_to_keysym(ord(char))
+        if self.is_invalid_keysym(keysym):
+            return ""
+        else:
+            return self.keysym_get_name(keysym)
 
+
+libxkbcommon = Xkbcommon.load()
 
 ################################################################################
 # Keysyms headers
@@ -159,16 +177,13 @@ def parse_keysyms_header(
                 if ref := keysyms.get(keysym):
                     # Deprecated, because there is a previous definition with other name.
                     # Ensure that the replacement keysym is supported by xkbcommon.
-                    if (
-                        not HAS_XKBCOMMON
-                        or xkb_keysym_from_name(ref) != XKB_KEY_NoSymbol
-                    ):
-                        keysyms_names[name] = ref
-                        continue
-                    else:
+                    if libxkbcommon and libxkbcommon.is_invalid_keysym_name(ref):
                         print(
                             f"[WARNING] Line {n}: Keep deprecated keysym “{name}”; reference keysym “{ref}” is not supported by available xkbcommon."
                         )
+                    else:
+                        keysyms_names[name] = ref
+                        continue
                 else:
                     # Reference keysym
                     keysyms[keysym] = name
@@ -294,9 +309,9 @@ def check_keysym(config: Configuration, n: int, keysym_name: str) -> str:
         # Reformat Unicode keysym
         codepoint = int(m.group("codepoint"), 16)
         unicode_keysym = f"U{codepoint:0>4X}"
-        if HAS_XKBCOMMON:
+        if libxkbcommon:
             # Find the canonical keysym name using xkbcommon
-            keysym_name = char_to_keysym(chr(codepoint))
+            keysym_name = libxkbcommon.char_to_keysym(chr(codepoint))
             # We keep our normalized Unicode in case xkbcommon returns a long
             # Unicode keysym, or we explicitely prefer Unicode keysyms, or
             # the named keysym is deprecated.
@@ -375,8 +390,8 @@ def process_lines(fd: TextIOWrapper, config: Configuration):
                 sequence = m.group("sequence")
             # Check result keysym
             if keysym := m.group("keysym"):
-                if HAS_XKBCOMMON:
-                    keysym_char = keysym_to_char(m.group("keysym"))
+                if libxkbcommon:
+                    keysym_char = libxkbcommon.keysym_to_char(m.group("keysym"))
                     if string != keysym_char:
                         print(
                             f"[ERROR] Line {n}: The keysym does not correspond to the character: expected “{string}”, got “{keysym_char}”.",
