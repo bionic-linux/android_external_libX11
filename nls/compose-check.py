@@ -152,21 +152,23 @@ def parse_keysyms_header(
         pending_multine_comment = False
         for n, line in enumerate(map(lambda l: l.strip(), fd)):
             if not line:
-                # Empty line
-                continue
+                # Skip empty line
+                pass
             elif pending_multine_comment:
+                # Continuation of a multiline comment.
+                # Check if it ends on this line.
                 if line.endswith("*/"):
                     pending_multine_comment = False
-                continue
             elif line.startswith("/*"):
+                # Start of a multiline comment
                 if not line.endswith("*/"):
                     pending_multine_comment = True
-                continue
             elif any(
                 line.startswith(s)
                 for s in ("#ifdef", "#ifndef", "#endif", "#define _", "#undef")
             ):
-                continue
+                # Skip C macros
+                pass
             elif m := KEYSYM_ENTRY_PATTERN.match(line):
                 if m.group("evdev"):
                     # _EVDEVK macro
