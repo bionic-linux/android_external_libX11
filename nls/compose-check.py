@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from __future__ import annotations
-from functools import partial
 
 import sys
 
@@ -14,6 +13,8 @@ if sys.version_info < MINIMUM_PYTHON_VERSION:
 import argparse
 import ctypes
 import ctypes.util
+from enum import Enum, IntFlag, unique
+from functools import partial
 import logging
 import re
 import shutil
@@ -39,6 +40,7 @@ class Configuration:
 
 
 logger = logging.getLogger(__name__)
+verbosity: int = 0
 
 
 def file_only(category: str, path: Path):
@@ -154,17 +156,31 @@ KEYSYM_ENTRY_PATTERN = re.compile(
     (?P<evdev>_EVDEVK\()?
     (?P<value>0x[0-9a-fA-F]+)
     (?(evdev)\)|)\s*
-    (?:/\*\s*
-        (?:
-            (?P<deprecated>deprecated)|
-            \(U\+(?P<unicode>[0-9a-fA-F]{4,})(?:\s|\w|-)+\)|
-            .*
-        )
-    )?
+    (?:/\*(?P<comment>.+)\*/)?
+    \s*$
     """,
     re.VERBOSE,
 )
+KEYSYM_DEPRECATION_COMMENT_PATTERN = re.compile(
+    r"""
+    # Explicit alias: do not deprecate
+    alias\s+for\s+(?P<alias>\w+)|
+    # Explicitly deprecated
+    (?P<deprecated>deprecated)|
+    # Inexact Unicode match
+    \(U\+(?P<inexact_unicode>[0-9a-fA-F]{4,})(?:\s|\w|-)+\)
+    """,
+    re.VERBOSE | re.IGNORECASE,
+)
 EXTRA_DEPRECATED_KEYSYMS = ("Ext16bit_L", "Ext16bit_R")
+
+
+@unique
+class Deprecation(IntFlag):
+    NONE = 0
+    ALIAS = 1 << 0
+    EXPLICIT = 1 << 2
+    IMPLICIT = 1 << 3
 
 
 def handle_keysym_match(
@@ -179,29 +195,72 @@ def handle_keysym_match(
     else:
         keysym = int(m.group("value"), 16)
     name = (m.group("prefix") or "") + m.group("name")
-    if ref := keysyms.get(keysym):
-        # Deprecated, because there is a previous definition with other name.
-        # Ensure that the replacement keysym is supported by xkbcommon.
-        if libxkbcommon and libxkbcommon.is_invalid_keysym_name(ref):
-            logger.warning(
-                f"Line {line_nbr}: Keep deprecated keysym “{name}”; reference keysym “{ref}” is not supported by available xkbcommon."
-            )
-        else:
-            keysyms_names[name] = ref
-            return
-    else:
-        # Reference keysym
-        keysyms[keysym] = name
-    if (
-        m.group("deprecated")
-        or m.group("unicode")
-        or m.group("name") in EXTRA_DEPRECATED_KEYSYMS
+    alias = None
+    if (comment := m.group("comment")) and (
+        comment_match := KEYSYM_DEPRECATION_COMMENT_PATTERN.match(comment.strip())
     ):
+        if comment_match.group("deprecated") or comment_match.group("inexact_unicode"):
+            # Explicitely deprecated
+            deprecated = Deprecation.EXPLICIT
+        elif alias := comment_match.group("alias"):
+            # Explicit alias: do not deprecate
+            deprecated = Deprecation.ALIAS
+        else:
+            # Normal comment
+            deprecated = Deprecation.NONE
+    elif name in EXTRA_DEPRECATED_KEYSYMS:
         # Explicitely deprecated
-        keysyms_names[name] = ""
+        deprecated = Deprecation.EXPLICIT
+    else:
+        deprecated = Deprecation.NONE
+
+    if name in keysyms_names:
+        # Duplicate keysym: skip
+        if verbosity:
+            logger.warning(
+                f"Line {line_nbr}: Keysym “{name}” 0x{keysym:0>4x} already defined; skipping."
+            )
+        return
+    elif ref := keysyms.get(keysym):
+        if deprecated & Deprecation.ALIAS:
+            # Check alias has same value
+            if keysyms.get(keysym) != alias:
+                if verbosity:
+                    if alias in keysyms_names:
+                        logger.warning(
+                            f"Line {line_nbr}: Keysym {name} is declared as alias of {alias}, but they have different values."
+                        )
+                    else:
+                        logger.warning(
+                            f"Line {line_nbr}: Keysym “{name}” is declared as alias of “{alias}”, but the alias does not exists. Typo?"
+                        )
+            keysyms_names[name] = name
+        else:
+            # Deprecated, because there is a previous definition with other name.
+            # Ensure that the replacement keysym is supported by xkbcommon.
+            deprecated |= Deprecation.IMPLICIT
+            if libxkbcommon and libxkbcommon.is_invalid_keysym_name(ref):
+                if verbosity:
+                    logger.warning(
+                        f"Line {line_nbr}: Keep deprecated keysym “{name}”; reference keysym “{ref}” is not supported by available xkbcommon."
+                    )
+                keysyms_names[name] = name
+            else:
+                keysyms_names[name] = ref
     else:
         # Reference keysym
-        keysyms_names[name] = name
+        if deprecated & Deprecation.ALIAS:
+            if verbosity:
+                logger.error(
+                    f"Line {line_nbr}: Explicit alias “{name}” for “{alias}” is invalid."
+                )
+            keysyms_names[name] = name
+        elif deprecated & Deprecation.EXPLICIT:
+            keysyms_names[name] = ""
+        else:
+            assert deprecated is Deprecation.NONE
+            keysyms_names[name] = name
+        keysyms[keysym] = name
 
 
 def parse_keysyms_header(
@@ -239,7 +298,8 @@ def parse_keysyms_headers(paths: Sequence[Path]) -> dict[str, str]:
     keysyms: dict[int, str] = {}
     keysyms_names: dict[str, str] = {}
     for path in paths:
-        logger.info(processing_file_message("keysym header", path))
+        if verbosity:
+            logger.info(processing_file_message("keysym header", path))
         parse_keysyms_header(path, keysyms, keysyms_names)
     return keysyms_names
 
@@ -251,7 +311,8 @@ def parse_keysyms_headers(paths: Sequence[Path]) -> dict[str, str]:
 
 def parse_unicode_name_aliases(path: Path) -> dict[str, str]:
     aliases: dict[str, str] = {}
-    logger.info(processing_file_message("Unicode name aliases", path))
+    if verbosity:
+        logger.info(processing_file_message("Unicode name aliases", path))
     with path.open("rt", encoding="utf-8") as fd:
         for line in map(lambda s: s.strip(), fd):
             # Empty line or comment
@@ -541,6 +602,13 @@ def parse_args():
         action="store_true",
         help="Do NOT convert XCOMM comments to # comments",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase verbosity. Useful to see log entry of keysyms headers & Unicode files.",
+    )
     parser.add_argument("--write", action="store_true", help="Write the compose file")
     return parser.parse_args()
 
@@ -555,6 +623,7 @@ if __name__ == "__main__":
 
     # Parse CLI args
     args = parse_args()
+    verbosity = args.verbose
     if args.no_keysyms:
         keysyms = []
     elif args.keysyms:
