@@ -356,9 +356,31 @@ COMPOSE_ENTRY_PATTERN = re.compile(
     re.VERBOSE,
 )
 """A pattern for Compose entries"""
+COMPOSE_TAG_PATTERN = re.compile(r"\s*\{([^}]+)\}")
+COMPOSE_APL_PATTERN = re.compile(r"\S \S APL ")
+
 
 UNICODE_KEYSYM_PATTERN = re.compile(r"\bU(?P<codepoint>[0-9A-Fa-f]+)\b")
 KEYSYM_PATTERN = re.compile(r"<(\w+)>")
+
+
+@unique
+class ComposeTag(Enum):
+    PRESERVE_COMMENT = "preserve comment"
+
+
+COMPOSE_TAGS_MAPPING = {t.value: t for t in ComposeTag}
+
+
+def parse_compose_tags(s: str) -> tuple[set[ComposeTag], set[str]]:
+    valid: set[ComposeTag] = set()
+    invalid: set[str] = set()
+    for t in COMPOSE_TAG_PATTERN.findall(s):
+        if tag := COMPOSE_TAGS_MAPPING.get(t):
+            valid.add(tag)
+        else:
+            invalid.add(t)
+    return valid, invalid
 
 
 def _unescape(s: str) -> Generator[str, Any, None]:
@@ -476,16 +498,30 @@ def handle_compose_entry_match(
             if keysym != m.group("keysym"):
                 rewrite = True
     expected_comment = make_comment(config.unicode_name_aliases, string)
-    # Check if we have the expected comment
-    # NOTE: Some APL sequences provide the combo of composed characters
-    if not (
-        m.group("comment") == expected_comment
-        or (m.group("comment") and m.group("comment")[4:] == expected_comment)
-    ):
-        logger.warning(
-            f"Line {line_nbr}: Expected “{expected_comment}” comment, "
-            f"got: “{m.group('comment')}”",
-        )
+    # Check the comment
+    if comment := m.group("comment"):
+        # Check tags
+        tags, invalid = parse_compose_tags(comment)
+        if invalid:
+            logger.error(f"Line {line_nbr}: Invalid tags {invalid}")
+        if tags:
+            logger.info(f"Line {line_nbr}: preserving comment")
+            expected_comment = comment
+        # Check if we have the expected comment
+        # NOTE: Some APL sequences provide the combo of composed characters
+        elif comment == expected_comment or (
+            COMPOSE_APL_PATTERN.match(comment)
+            and COMPOSE_APL_PATTERN.sub("APL ", comment) == expected_comment
+        ):
+            expected_comment = comment
+        else:
+            logger.warning(
+                f"Line {line_nbr}: Expected “{expected_comment}” comment, "
+                f"got: “{m.group('comment')}”",
+            )
+            rewrite = True
+    else:
+        # No comment: require to write it
         rewrite = True
     # Rewrite entry if necessary
     if rewrite:
