@@ -200,7 +200,7 @@ def handle_keysym_match(
         comment_match := KEYSYM_DEPRECATION_COMMENT_PATTERN.match(comment.strip())
     ):
         if comment_match.group("deprecated") or comment_match.group("inexact_unicode"):
-            # Explicitely deprecated
+            # Explicitly deprecated
             deprecated = Deprecation.EXPLICIT
         elif alias := comment_match.group("alias"):
             # Explicit alias: do not deprecate
@@ -209,7 +209,7 @@ def handle_keysym_match(
             # Normal comment
             deprecated = Deprecation.NONE
     elif name in EXTRA_DEPRECATED_KEYSYMS:
-        # Explicitely deprecated
+        # Explicitly deprecated
         deprecated = Deprecation.EXPLICIT
     else:
         deprecated = Deprecation.NONE
@@ -267,20 +267,20 @@ def parse_keysyms_header(
     path: Path, keysyms: dict[int, str], keysyms_names: dict[str, str]
 ):
     with path.open("rt", encoding="utf-8") as fd:
-        pending_multine_comment = False
+        pending_multiline_comment = False
         for line_nbr, line in enumerate(map(lambda l: l.strip(), fd)):
             if not line:
                 # Skip empty line
                 pass
-            elif pending_multine_comment:
+            elif pending_multiline_comment:
                 # Continuation of a multiline comment.
                 # Check if it ends on this line.
                 if line.endswith("*/"):
-                    pending_multine_comment = False
+                    pending_multiline_comment = False
             elif line.startswith("/*"):
                 # Start of a multiline comment
                 if not line.endswith("*/"):
-                    pending_multine_comment = True
+                    pending_multiline_comment = True
             elif any(
                 line.startswith(s)
                 for s in ("#ifdef", "#ifndef", "#endif", "#define _", "#undef")
@@ -428,7 +428,7 @@ def check_keysym(config: Configuration, n: int, keysym_name: str) -> str:
             # Find the canonical keysym name using xkbcommon
             keysym_name = libxkbcommon.char_to_keysym(chr(codepoint))
             # We keep our normalized Unicode in case xkbcommon returns a long
-            # Unicode keysym, or we explicitely prefer Unicode keysyms, or
+            # Unicode keysym, or we explicitly prefer Unicode keysyms, or
             # the named keysym is deprecated.
             if (
                 unicode_keysym == keysym_name
@@ -461,14 +461,14 @@ def check_keysym(config: Configuration, n: int, keysym_name: str) -> str:
 
 
 def check_keysym_sequence(config: Configuration, n: int, sequence: str) -> str:
-    subsitutions: dict[str, str] = {}
+    substitutions: dict[str, str] = {}
     for keysym_name in KEYSYM_PATTERN.findall(sequence):
         keysym_nameʹ = check_keysym(config, n, keysym_name)
         if keysym_nameʹ != keysym_name:
-            subsitutions[keysym_name] = keysym_nameʹ
-    if subsitutions:
-        pattern = re.compile("|".join(re.escape(k) for k in subsitutions.keys()))
-        return pattern.sub(lambda x: subsitutions[x.group()], sequence)
+            substitutions[keysym_name] = keysym_nameʹ
+    if substitutions:
+        pattern = re.compile("|".join(re.escape(k) for k in substitutions.keys()))
+        return pattern.sub(lambda x: substitutions[x.group()], sequence)
     else:
         return sequence
 
@@ -516,7 +516,7 @@ def handle_compose_entry_match(
             expected_comment = comment
         else:
             logger.warning(
-                f"Line {line_nbr}: Expected “{expected_comment}” comment, "
+                f"Line {line_nbr}: Expected “{expected_comment}”, "
                 f"got: “{m.group('comment')}”",
             )
             rewrite = True
@@ -602,7 +602,7 @@ def run(
                 # Write to a temporary file
                 fd.writelines(process_compose_file(path, config))
                 fd.flush()
-                # No error: now ovewrite the original file
+                # No error: now overwrite the original file
                 shutil.copyfile(fd.name, path)
         else:
             for _ in process_compose_file(path, config):
@@ -610,7 +610,7 @@ def run(
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Add comment to compose sequence")
+    parser = argparse.ArgumentParser(description="Fix Compose file formatting")
     parser.add_argument("input", type=Path, nargs="+", help="Compose file to process")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--no-keysyms", action="store_true", help="Do not check keysyms")
