@@ -424,6 +424,8 @@ def check_keysym(config: Configuration, n: int, keysym_name: str) -> str:
         # Reformat Unicode keysym
         codepoint = int(m.group("codepoint"), 16)
         unicode_keysym = f"U{codepoint:0>4X}"
+        if not (0x100 <= codepoint <= 0x10ffff):
+            logger.error(f"Line {n}: Unicode keysym {keysym_name} is illegal: valid code points are 0x100..0x10ffff.")
         if libxkbcommon:
             # Find the canonical keysym name using xkbcommon
             keysym_name = libxkbcommon.char_to_keysym(chr(codepoint))
