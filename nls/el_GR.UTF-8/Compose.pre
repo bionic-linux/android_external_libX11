@@ -138,10 +138,10 @@ XCOMM Special Character
 <Multi_key> <asterisk> <0>		: "°"	degree
 <Multi_key> <plus> <minus>		: "±"	plusminus
 <Multi_key> <minus> <plus>		: "±"	plusminus
-<Multi_key> <slash> <u>			: "µ"	mu
-<Multi_key> <u> <slash>			: "µ"	mu
-<Multi_key> <slash> <U>			: "µ"	mu
-<Multi_key> <U> <slash>			: "µ"	mu
+<Multi_key> <slash> <u>			: "μ"	mu
+<Multi_key> <u> <slash>			: "μ"	mu
+<Multi_key> <slash> <U>			: "μ"	mu
+<Multi_key> <U> <slash>			: "μ"	mu
 <Multi_key> <1> <asciicircum>		: "¹"	onesuperior
 <Multi_key> <asciicircum> <1>		: "¹"	onesuperior
 <Multi_key> <S> <1>			: "¹"	onesuperior

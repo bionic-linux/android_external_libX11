@@ -293,9 +293,9 @@ XCOMM Latin-1 Supplement
 <Multi_key> <3> <asciicircum>		: "³"	threesuperior # SUPERSCRIPT THREE
 <dead_circumflex> <KP_3>		: "³"	threesuperior # SUPERSCRIPT THREE
 <Multi_key> <asciicircum> <KP_3>	: "³"	threesuperior # SUPERSCRIPT THREE
-<Multi_key> <m> <u>			: "µ"	mu # MICRO SIGN
-<Multi_key> <slash> <u>			: "µ"	mu # MICRO SIGN
-<Multi_key> <u> <slash>			: "µ"	mu # MICRO SIGN
+<Multi_key> <m> <u>			: "μ"	mu # GREEK SMALL LETTER MU
+<Multi_key> <slash> <u>			: "μ"	mu # GREEK SMALL LETTER MU
+<Multi_key> <u> <slash>			: "μ"	mu # GREEK SMALL LETTER MU
 <Multi_key> <1> <4>			: "¼"	onequarter # VULGAR FRACTION ONE QUARTER
 <Multi_key> <1> <2>			: "½"	onehalf # VULGAR FRACTION ONE HALF
 <Multi_key> <3> <4>			: "¾"	threequarters # VULGAR FRACTION THREE QUARTERS
@@ -4674,9 +4674,9 @@ XCOMM French-Dvorak Bépo compositions
 <dead_greek> <y>			: "ψ"	U03C8 # GREEK SMALL LETTER PSI
 <dead_greek> <Z>			: "Ζ"	U0396 # GREEK CAPITAL LETTER ZETA
 <dead_greek> <z>			: "ζ"	U03B6 # GREEK SMALL LETTER ZETA
-<dead_greek> <dead_greek>		: "µ"	U00B5 # MICRO SIGN
-<dead_greek> <nobreakspace>		: "µ"	U00B5 # MICRO SIGN
-<dead_greek> <space>			: "µ"	U00B5 # MICRO SIGN
+<dead_greek> <dead_greek>		: "μ"	U03BC # GREEK SMALL LETTER MU
+<dead_greek> <nobreakspace>		: "μ"	U03BC # GREEK SMALL LETTER MU
+<dead_greek> <space>			: "μ"	U03BC # GREEK SMALL LETTER MU
 <dead_hook> <B>				: "Ɓ"	U0181 # LATIN CAPITAL LETTER B WITH HOOK
 <dead_hook> <b>				: "ɓ"	U0253 # LATIN SMALL LETTER B WITH HOOK
 <dead_hook> <C>				: "Ƈ"	U0187 # LATIN CAPITAL LETTER C WITH HOOK
