@@ -95,8 +95,6 @@ XCOMM Two special spaces
 <Multi_key> <O> <R>			: "®"	registered # REGISTERED SIGN
 <Multi_key> <R> <O>			: "®"	registered # REGISTERED SIGN
 
-<Multi_key> <parenleft> <parenright> <parenright>: "🄯"	U1F12F # COPYLEFT SYMBOL
-
 XCOMM Special punctuation
 <Multi_key> <period> <period>		: "…"	ellipsis # HORIZONTAL ELLIPSIS
 <Multi_key> <period> <minus>		: "·"	periodcentered # MIDDLE DOT
@@ -3973,6 +3971,9 @@ XCOMM Letterlike Symbols
 <Multi_key> <Q> <Q>			: "ℚ"	U211A # DOUBLE-STRUCK CAPITAL Q
 <Multi_key> <R> <R>			: "ℝ"	U211D # DOUBLE-STRUCK CAPITAL R
 <Multi_key> <Z> <Z>			: "ℤ"	U2124 # DOUBLE-STRUCK CAPITAL Z
+<Multi_key> <o> <p>			: "℗"	U2117 # SOUND RECORDING COPYRIGHT
+<Multi_key> <O> <P>			: "℗"	U2117 # SOUND RECORDING COPYRIGHT
+<Multi_key> <P> <O>			: "℗"	U2117 # SOUND RECORDING COPYRIGHT
 <dead_circumflex> <Multi_key> <S> <M>	: "℠"	U2120 # SERVICE MARK
 <Multi_key> <S> <M>			: "℠"	U2120 # SERVICE MARK
 <dead_circumflex> <Multi_key> <s> <m>	: "℠"	U2120 # SERVICE MARK
@@ -4504,6 +4505,64 @@ XCOMM Musical notes
 <Multi_key> <U1D1BC> <U1D16E>		: "𝆺𝅥𝅮"	U1D1BE # MUSICAL SYMBOL SEMIMINIMA BLACK
 <Multi_key> <U1D1BB> <U1D16F>		: "𝆹𝅥𝅯"	U1D1BF # MUSICAL SYMBOL FUSA WHITE
 <Multi_key> <U1D1BC> <U1D16F>		: "𝆺𝅥𝅯"	U1D1C0 # MUSICAL SYMBOL FUSA BLACK
+
+XCOMM Enclosed Alphanumeric Supplement
+<Multi_key> <parenleft> <C> <D> <parenright>		: "🄭"	U1F12D # CIRCLED CD
+<Multi_key> <parenleft> <c> <d> <parenright>		: "🄭"	U1F12D # CIRCLED CD
+<Multi_key> <parenleft> <W> <Z> <parenright>		: "🄮"	U1F12E # CIRCLED WZ
+<Multi_key> <parenleft> <W> <z> <parenright>		: "🄮"	U1F12E # CIRCLED WZ
+<Multi_key> <parenleft> <w> <z> <parenright>		: "🄮"	U1F12E # CIRCLED WZ
+<Multi_key> <parenleft> <parenright> <parenright>	: "🄯"	U1F12F # COPYLEFT SYMBOL
+<Multi_key> <bracketleft> <A> <bracketright>		: "🄰"	U1F130 # SQUARED LATIN CAPITAL LETTER A
+<Multi_key> <bracketleft> <B> <bracketright>		: "🄱"	U1F131 # SQUARED LATIN CAPITAL LETTER B
+<Multi_key> <bracketleft> <C> <bracketright>		: "🄲"	U1F132 # SQUARED LATIN CAPITAL LETTER C
+<Multi_key> <bracketleft> <D> <bracketright>		: "🄳"	U1F133 # SQUARED LATIN CAPITAL LETTER D
+<Multi_key> <bracketleft> <E> <bracketright>		: "🄴"	U1F134 # SQUARED LATIN CAPITAL LETTER E
+<Multi_key> <bracketleft> <F> <bracketright>		: "🄵"	U1F135 # SQUARED LATIN CAPITAL LETTER F
+<Multi_key> <bracketleft> <G> <bracketright>		: "🄶"	U1F136 # SQUARED LATIN CAPITAL LETTER G
+<Multi_key> <bracketleft> <H> <bracketright>		: "🄷"	U1F137 # SQUARED LATIN CAPITAL LETTER H
+<Multi_key> <bracketleft> <I> <bracketright>		: "🄸"	U1F138 # SQUARED LATIN CAPITAL LETTER I
+<Multi_key> <bracketleft> <J> <bracketright>		: "🄹"	U1F139 # SQUARED LATIN CAPITAL LETTER J
+<Multi_key> <bracketleft> <K> <bracketright>		: "🄺"	U1F13A # SQUARED LATIN CAPITAL LETTER K
+<Multi_key> <bracketleft> <L> <bracketright>		: "🄻"	U1F13B # SQUARED LATIN CAPITAL LETTER L
+<Multi_key> <bracketleft> <M> <bracketright>		: "🄼"	U1F13C # SQUARED LATIN CAPITAL LETTER M
+<Multi_key> <bracketleft> <N> <bracketright>		: "🄽"	U1F13D # SQUARED LATIN CAPITAL LETTER N
+<Multi_key> <bracketleft> <O> <bracketright>		: "🄾"	U1F13E # SQUARED LATIN CAPITAL LETTER O
+<Multi_key> <bracketleft> <P> <bracketright>		: "🄿"	U1F13F # SQUARED LATIN CAPITAL LETTER P
+<Multi_key> <bracketleft> <Q> <bracketright>		: "🅀"	U1F140 # SQUARED LATIN CAPITAL LETTER Q
+<Multi_key> <bracketleft> <R> <bracketright>		: "🅁"	U1F141 # SQUARED LATIN CAPITAL LETTER R
+<Multi_key> <bracketleft> <S> <bracketright>		: "🅂"	U1F142 # SQUARED LATIN CAPITAL LETTER S
+<Multi_key> <bracketleft> <T> <bracketright>		: "🅃"	U1F143 # SQUARED LATIN CAPITAL LETTER T
+<Multi_key> <bracketleft> <U> <bracketright>		: "🅄"	U1F144 # SQUARED LATIN CAPITAL LETTER U
+<Multi_key> <bracketleft> <V> <bracketright>		: "🅅"	U1F145 # SQUARED LATIN CAPITAL LETTER V
+<Multi_key> <bracketleft> <W> <bracketright>		: "🅆"	U1F146 # SQUARED LATIN CAPITAL LETTER W
+<Multi_key> <bracketleft> <X> <bracketright>		: "🅇"	U1F147 # SQUARED LATIN CAPITAL LETTER X
+<Multi_key> <bracketleft> <Y> <bracketright>		: "🅈"	U1F148 # SQUARED LATIN CAPITAL LETTER Y
+<Multi_key> <bracketleft> <Z> <bracketright>		: "🅉"	U1F149 # SQUARED LATIN CAPITAL LETTER Z
+<Multi_key> <bracketleft> <H> <V> <bracketright>	: "🅊"	U1F14A # SQUARED HV
+<Multi_key> <bracketleft> <M> <V> <bracketright>	: "🅋"	U1F14B # SQUARED MV
+<Multi_key> <bracketleft> <S> <D> <bracketright>	: "🅌"	U1F14C # SQUARED SD
+<Multi_key> <bracketleft> <S> <S> <bracketright>	: "🅍"	U1F14D # SQUARED SS
+<Multi_key> <bracketleft> <P> <P> <V> <bracketright>	: "🅎"	U1F14E # SQUARED PPV
+<Multi_key> <bracketleft> <W> <C> <bracketright>	: "🅏"	U1F14F # SQUARED WC
+<dead_circumflex> <Multi_key> <M> <C>	: "🅪"	U1F16A # RAISED MC SIGN
+<Multi_key> <M> <C>			: "🅪"	U1F16A # RAISED MC SIGN
+<dead_circumflex> <Multi_key> <m> <c>	: "🅪"	U1F16A # RAISED MC SIGN
+<Multi_key> <m> <c>			: "🅪"	U1F16A # RAISED MC SIGN
+<dead_circumflex> <Multi_key> <M> <D>	: "🅫"	U1F16B # RAISED MD SIGN
+<Multi_key> <M> <D>			: "🅫"	U1F16B # RAISED MD SIGN
+<dead_circumflex> <Multi_key> <m> <d>	: "🅫"	U1F16B # RAISED MD SIGN
+<Multi_key> <m> <d>			: "🅫"	U1F16B # RAISED MD SIGN
+<dead_circumflex> <Multi_key> <M> <R>	: "🅬"	U1F16C # RAISED MR SIGN
+<Multi_key> <M> <R>			: "🅬"	U1F16C # RAISED MR SIGN
+<dead_circumflex> <Multi_key> <m> <r>	: "🅬"	U1F16C # RAISED MR SIGN
+<Multi_key> <m> <r>			: "🅬"	U1F16C # RAISED MR SIGN
+<Multi_key> <parenleft> <C> <C> <parenright>	: "🅭"	U1F16D # CIRCLED CC
+<Multi_key> <parenleft> <c> <c> <parenright>	: "🅭"	U1F16D # CIRCLED CC
+<Multi_key> <bracketleft> <d> <bracketright>	: "🆥"	U1F1A5 # SQUARED LATIN SMALL LETTER D
+<Multi_key> <o> <m>	: "🆭"	U1F1AD # MASK WORK SYMBOL
+<Multi_key> <O> <M>	: "🆭"	U1F1AD # MASK WORK SYMBOL
+<Multi_key> <M> <O>	: "🆭"	U1F1AD # MASK WORK SYMBOL
 
 XCOMM Khmer digraphs
 <U17ff>	: "ាំ"	# KHMER VOWEL SIGN AA plus KHMER SIGN NIKAHIT
