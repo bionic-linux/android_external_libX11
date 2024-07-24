@@ -212,7 +212,10 @@ XCOMM Currencies
 <Multi_key> <equal> <Cyrillic_TE>	: "₮"	U20ae # TUGRIK SIGN
 <Multi_key> <Cyrillic_te> <equal>	: "₮"	U20ae # TUGRIK SIGN
 <Multi_key> <equal> <Cyrillic_te>	: "₮"	U20ae # TUGRIK SIGN
-XCOMM "₱" U20b1 PESO SIGN
+<Multi_key> <P> <equal>			: "₱"	U20b1 # PESO SIGN
+<Multi_key> <equal> <P>			: "₱"	U20b1 # PESO SIGN
+<Multi_key> <p> <equal>			: "₱"	U20b1 # PESO SIGN
+<Multi_key> <equal> <p>			: "₱"	U20b1 # PESO SIGN
 <Multi_key> <G> <bar>			: "₲"	U20b2 # GUARANI SIGN
 <Multi_key> <bar> <G>			: "₲"	U20b2 # GUARANI SIGN
 <Multi_key> <H> <equal>			: "₴"	U20b4 # HRYVNIA SIGN
