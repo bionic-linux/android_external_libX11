@@ -150,7 +150,9 @@ typedef struct _XimProtoPrivateRec {
     XimTransCallDispatcher	 call_dispatcher;
     XPointer			 spec;
 
-    unsigned long                fabricated_serial;
+    unsigned long		 fabricated_serial;
+    Time			 fabricated_time;
+    Bool			 enable_fabricated_order;
 } XimProtoPrivateRec;
 
 /*
@@ -312,16 +314,17 @@ typedef struct _XicProtoPrivateRec {
 Bool
 _XimFabricateSerial(
     Xim                  im,
-    unsigned long        serial);
+    XKeyEvent           *event);
 
 Bool
 _XimUnfabricateSerial(
     Xim                  im,
-    unsigned long        serial);
+    Xic                  ic,
+    XKeyEvent           *event);
 
 Bool
 _XimIsFabricatedSerial(
     Xim                  im,
-    unsigned long        serial);
+    XKeyEvent           *event);
 
 #endif /* _XIMINTP_H */
