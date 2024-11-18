@@ -165,6 +165,10 @@ XCOMM Currencies
 <Multi_key> <equal> <Y>			: "¥"	yen # YEN SIGN
 <Multi_key> <y> <equal>			: "¥"	yen # YEN SIGN
 <Multi_key> <equal> <y>			: "¥"	yen # YEN SIGN
+<Multi_key> <Armenian_DA> <equal>	: "֏"	U058f # ARMENIAN DRAM SIGN
+<Multi_key> <equal> <Armenian_DA>	: "֏"	U058f # ARMENIAN DRAM SIGN
+<Multi_key> <Armenian_da> <equal>	: "֏"	U058f # ARMENIAN DRAM SIGN
+<Multi_key> <equal> <Armenian_da>	: "֏"	U058f # ARMENIAN DRAM SIGN
 <Multi_key> <B> <bar>			: "฿"	U0e3f # THAI CURRENCY SYMBOL BAHT
 <Multi_key> <bar> <B>			: "฿"	U0e3f # THAI CURRENCY SYMBOL BAHT
 <Multi_key> <C> <E>			: "₠"	U20a0 # EURO-CURRENCY SIGN
@@ -182,7 +186,10 @@ XCOMM Currencies
 <Multi_key> <R> <s>			: "₨"	U20a8 # RUPEE SIGN
 <Multi_key> <W> <equal>			: "₩"	U20a9 # WON SIGN
 <Multi_key> <equal> <W>			: "₩"	U20a9 # WON SIGN
-XCOMM "₪" U20aa NEW SHEQEL SIGN
+<Multi_key> <N> <U>						: "₪"	NewSheqelSign # NEW SHEQEL SIGN
+<Multi_key> <n> <u>						: "₪"	NewSheqelSign # NEW SHEQEL SIGN
+<Multi_key> <hebrew_shin> <hebrew_chet>	: "₪"	NewSheqelSign # NEW SHEQEL SIGN
+<Multi_key> <hebrew_chet> <hebrew_shin>	: "₪"	NewSheqelSign # NEW SHEQEL SIGN
 <Multi_key> <d> <equal>			: "₫"	U20ab # DONG SIGN
 <Multi_key> <equal> <d>			: "₫"	U20ab # DONG SIGN
 <Multi_key> <C> <equal>			: "€"	EuroSign # EURO SIGN
@@ -201,7 +208,14 @@ XCOMM "₪" U20aa NEW SHEQEL SIGN
 <Multi_key> <minus> <K>			: "₭"	U20ad # KIP SIGN
 <Multi_key> <T> <equal>			: "₮"	U20ae # TUGRIK SIGN
 <Multi_key> <equal> <T>			: "₮"	U20ae # TUGRIK SIGN
-XCOMM "₱" U20b1 PESO SIGN
+<Multi_key> <Cyrillic_TE> <equal>	: "₮"	U20ae # TUGRIK SIGN
+<Multi_key> <equal> <Cyrillic_TE>	: "₮"	U20ae # TUGRIK SIGN
+<Multi_key> <Cyrillic_te> <equal>	: "₮"	U20ae # TUGRIK SIGN
+<Multi_key> <equal> <Cyrillic_te>	: "₮"	U20ae # TUGRIK SIGN
+<Multi_key> <P> <equal>			: "₱"	U20b1 # PESO SIGN
+<Multi_key> <equal> <P>			: "₱"	U20b1 # PESO SIGN
+<Multi_key> <p> <equal>			: "₱"	U20b1 # PESO SIGN
+<Multi_key> <equal> <p>			: "₱"	U20b1 # PESO SIGN
 <Multi_key> <G> <bar>			: "₲"	U20b2 # GUARANI SIGN
 <Multi_key> <bar> <G>			: "₲"	U20b2 # GUARANI SIGN
 <Multi_key> <H> <equal>			: "₴"	U20b4 # HRYVNIA SIGN
@@ -214,18 +228,40 @@ XCOMM "₱" U20b1 PESO SIGN
 <Multi_key> <equal> <Cyrillic_ghe>	: "₴"	U20b4 # HRYVNIA SIGN
 <Multi_key> <C> <bar>			: "₵"	U20b5 # CEDI SIGN
 <Multi_key> <bar> <C>			: "₵"	U20b5 # CEDI SIGN
+<Multi_key> <T> <underscore>			: "₸"	U20b8 # TENGE SIGN
+<Multi_key> <underscore> <T>			: "₸"	U20b8 # TENGE SIGN
+<Multi_key> <Cyrillic_TE> <underscore>	: "₸"	U20b8 # TENGE SIGN
+<Multi_key> <underscore> <Cyrillic_TE>	: "₸"	U20b8 # TENGE SIGN
+<Multi_key> <Cyrillic_te> <underscore>	: "₸"	U20b8 # TENGE SIGN
+<Multi_key> <underscore> <Cyrillic_te>	: "₸"	U20b8 # TENGE SIGN
 <Multi_key> <R> <equal>			: "₹"	U20b9 # INDIAN RUPEE SIGN
 <Multi_key> <equal> <R>			: "₹"	U20b9 # INDIAN RUPEE SIGN
 <Multi_key> <r> <equal>			: "₹"	U20b9 # INDIAN RUPEE SIGN
 <Multi_key> <equal> <r>			: "₹"	U20b9 # INDIAN RUPEE SIGN
-<Multi_key> <P> <equal>			: "₽"	U20bd # ROUBLE SIGN
-<Multi_key> <equal> <P>			: "₽"	U20bd # ROUBLE SIGN
-<Multi_key> <p> <equal>			: "₽"	U20bd # ROUBLE SIGN
-<Multi_key> <equal> <p>			: "₽"	U20bd # ROUBLE SIGN
-<Multi_key> <Cyrillic_ZE> <equal>	: "₽"	U20bd # ROUBLE SIGN
-<Multi_key> <equal> <Cyrillic_ZE>	: "₽"	U20bd # ROUBLE SIGN
-<Multi_key> <Cyrillic_ze> <equal>	: "₽"	U20bd # ROUBLE SIGN
-<Multi_key> <equal> <Cyrillic_ze>	: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <m> <bar>			: "₼"	U20bc # MANAT SIGN
+<Multi_key> <bar> <m>			: "₼"	U20bc # MANAT SIGN
+<Multi_key> <P> <minus>			: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <minus> <P>			: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <p> <minus>			: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <minus> <p>			: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <Cyrillic_ER> <minus>	: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <minus> <Cyrillic_ER>	: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <Cyrillic_er> <minus>	: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <minus> <Cyrillic_er>	: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <Cyrillic_ER> <equal>	: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <equal> <Cyrillic_ER>	: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <Cyrillic_er> <equal>	: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <equal> <Cyrillic_er>	: "₽"	U20bd # ROUBLE SIGN
+<Multi_key> <Georgian_las> <equal>	: "₾"	U20be # LARI SIGN
+<Multi_key> <equal> <Georgian_las>	: "₾"	U20be # LARI SIGN
+<Multi_key> <C> <underscore>			: "⃀"	U20c0 # SOM SIGN
+<Multi_key> <underscore> <C>			: "⃀"	U20c0 # SOM SIGN
+<Multi_key> <c> <underscore>			: "⃀"	U20c0 # SOM SIGN
+<Multi_key> <underscore> <c>			: "⃀"	U20c0 # SOM SIGN
+<Multi_key> <Cyrillic_ES> <underscore>	: "⃀"	U20c0 # SOM SIGN
+<Multi_key> <underscore> <Cyrillic_ES>	: "⃀"	U20c0 # SOM SIGN
+<Multi_key> <Cyrillic_es> <underscore>	: "⃀"	U20c0 # SOM SIGN
+<Multi_key> <underscore> <Cyrillic_es>	: "⃀"	U20c0 # SOM SIGN
 
 XCOMM Dashes
 <Multi_key> <minus> <minus> <period>	: "–"	U2013 # EN DASH
