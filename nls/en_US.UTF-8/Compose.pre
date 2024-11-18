@@ -114,6 +114,7 @@ XCOMM Special punctuation
 <Multi_key> <minus> <minus> <space>	: "­"	U00ad # SOFT HYPHEN
 <Multi_key> <bar> <minus>		: "†"	U2020 # DAGGER
 <Multi_key> <bar> <equal>		: "‡"	U2021 # DOUBLE DAGGER
+<Multi_key> <asterisk> <asterisk> <asterisk>	: "⁂"	U2042 # ASTERISM
 <Multi_key> <percent> <o>		: "‰"	U2030 # PER MILLE SIGN
 
 XCOMM Some ligatures
