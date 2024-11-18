@@ -70,7 +70,7 @@ static void parsestringfile(FILE *fp, Xim im, int depth);
  *	EVENT         ::= [MODIFIER_LIST] "<" keysym ">"
  *	MODIFIER_LIST ::= (["!"] {MODIFIER} ) | "None"
  *	MODIFIER      ::= ["~"] MODIFIER_NAME
- *	MODIFIER_NAME ::= ("Ctrl"|"Lock"|"Caps"|"Shift"|"Alt"|"Meta")
+ *	MODIFIER_NAME ::= ("Ctrl"|"Lock"|"Caps"|"Shift"|"Alt"|"Meta"|"Super"|"Hyper")
  *	RHS           ::= ( STRING | keysym | STRING keysym )
  *	STRING        ::= '"' { CHAR } '"'
  *	CHAR          ::= GRAPHIC_CHAR | ESCAPED_CHAR
@@ -294,7 +294,9 @@ modmask(
         { "Caps",	LockMask	},
         { "Shift",	ShiftMask	},
         { "Alt",	Mod1Mask	},
-        { "Meta",	Mod1Mask	}};
+        { "Meta",	Mod1Mask	},
+        { "Hyper",	Mod3Mask	},
+        { "Super",	Mod4Mask	}};
 
     int i, num_entries = sizeof (tbl) / sizeof (tbl[0]);
 
@@ -441,7 +443,7 @@ get_mb_string (Xim im, char *buf, KeySym ks)
     return len;
 }
 
-#define AllMask (ShiftMask | LockMask | ControlMask | Mod1Mask)
+#define AllMask (ShiftMask | LockMask | ControlMask | Mod1Mask | Mod3Mask | Mod4Mask)
 #define LOCAL_WC_BUFSIZE 128
 #define LOCAL_UTF8_BUFSIZE 256
 #define SEQUENCE_MAX	10

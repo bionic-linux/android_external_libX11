@@ -99,7 +99,7 @@ Each event consists of a specified input keysym, and optional modifier states:
 If the modifier list is preceded by
 .RB \*q "!" \*q
 it must match exactly.
-MODIFIER may be one of Ctrl, Lock, Caps, Shift, Alt or Meta.
+MODIFIER may be one of Ctrl, Lock, Caps, Shift, Alt, Meta, Super or Hyper.
 Each modifier may be preceded by a
 .RB \*q "~" \*q
 character to indicate that the modifier must not be present.
