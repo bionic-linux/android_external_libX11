@@ -1,0 +1,33 @@
+XCOMM UTF-8 (Unicode) compose sequences
+XCOMM
+XCOMM Modified for French by Cimbali <me@cimba.li>
+
+XCOMM Use the sequences from en_US.UTF-8 as the basis
+XCOMM In particular all compositions for dead keys:
+XCOMM   dead_circumflex dead_diaeresis dead_grave
+XCOMM   dead_acute dead_tilde dead_abovering dead_macron
+XCOMM   dead_caron dead_ogonek dead_cedilla dead_breve
+XCOMM   dead_belowdot dead_abovedot dead_stroke dead_horn
+XCOMM   dead_greek dead_doubleacute dead_currency
+XCOMM   dead_belowcomma dead_hook dead_invertedbreve
+XCOMM   dead_doublegrave dead_belowmacron
+
+include "X11_LOCALEDATADIR/en_US.UTF-8/Compose"
+
+XCOMM Symbols from european latin languages used in standardised French layout
+XCOMM ref. AFNOR NF Z71-300
+<dead_similar> <a>	: "ª"   ordfeminine # FEMININE ORDINAL INDICATOR
+<dead_similar> <e>	: "ə"   U0259 # LATIN SMALL LETTER SCHWA
+<dead_similar> <E>	: "Ə"   U018F # LATIN CAPITAL LETTER SCHWA
+<dead_similar> <t>	: "þ"   thorn # LATIN SMALL LETTER THORN
+<dead_similar> <T>	: "Þ"   THORN # LATIN CAPITAL LETTER THORN
+<dead_similar> <i>	: "ı"   U0131 # LATIN SMALL LETTER DOTLESS I
+<dead_similar> <I>	: "İ"   U0130 # LATIN CAPITAL LETTER I WITH DOT ABOVE
+<dead_similar> <o>	: "º"   masculine # MASCULINE ORDINAL INDICATOR
+<dead_similar> <s>	: "ſ"   U017f # LATIN SMALL LETTER LONG S
+<dead_similar> <d>	: "ð"   eth # LATIN SMALL LETTER ETH
+<dead_similar> <D>	: "Ð"   ETH # LATIN CAPITAL LETTER ETH
+<dead_similar> <g>	: "ŋ"   U014B # LATIN SMALL LETTER ENG
+<dead_similar> <G>	: "Ŋ"   U014A # LATIN CAPITAL LETTER ENG
+<dead_similar> <j>	: "ĳ"   U0133 # LATIN SMALL LIGATURE IJ
+<dead_similar> <J>	: "Ĳ"   U0132 # LATIN CAPITAL LIGATURE IJ
