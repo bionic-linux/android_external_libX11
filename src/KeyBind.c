@@ -655,15 +655,33 @@ XConvertCase(
 {
     /* Latin 1 keysym */
     if (sym < 0x100) {
+        /* Special cases that do not map within Latin-1 */
+        switch (sym) {
+        case XK_ydiaeresis:
+            *lower = sym;
+            *upper = XK_Ydiaeresis;
+            return;
+        case XK_mu:
+            *lower = sym;
+            *upper = XK_Greek_MU;
+            return;
+        case XK_ssharp:
+            *lower = sym;
+            *upper = 0x1001e9e;
+            return;
+        }
         UCSConvertCase(sym, lower, upper);
-	return;
+        return;
     }
 
     /* Unicode keysym */
     if ((sym & 0xff000000) == 0x01000000) {
         UCSConvertCase((sym & 0x00ffffff), lower, upper);
-        *upper |= 0x01000000;
-        *lower |= 0x01000000;
+        /* Use the Unicode keysym mask only for non Latin-1 */
+        if (*upper >= 0x100)
+            *upper |= 0x01000000;
+        if (*lower >= 0x100)
+            *lower |= 0x01000000;
         return;
     }
 
